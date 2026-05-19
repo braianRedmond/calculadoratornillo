@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CalcPesa - Calculadora de Tornillos</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚙️%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: var(--card);
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+
+        .tab:active {
+            transform: scale(0.98);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--bg);
+            color: var(--text);
+            transition: all 0.2s;
+            -webkit-appearance: none;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            display: none;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .result-unit {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .result-detail {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .screw-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .screw-item {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .screw-item:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .screw-info h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .screw-info p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .screw-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:active {
+            transform: scale(0.9);
+        }
+
+        .btn-icon.edit {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+
+        .btn-icon.delete {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .btn-icon.use {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        .quick-calc {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .quick-btn {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+
+        .quick-btn:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .quick-btn:active {
+            transform: scale(0.95);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .history-item .time {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            padding-left: 44px;
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-box {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            border-top: 1px solid var(--border);
+            z-index: 50;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-primary {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+
+        @media (max-width: 400px) {
+            .header h1 { font-size: 1.2rem; }
+            .result-value { font-size: 2rem; }
+            .quick-calc { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚙️ CalcPesa</h1>
+        <p>Calculadora de peso de tornillos</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('calc')">🧮 Calcular</button>
+            <button class="tab" onclick="showTab('screws')">📋 Tornillos</button>
+            <button class="tab" onclick="showTab('history')">📜 Historial</button>
+        </div>
+
+        <!-- TAB: CALCULAR -->
+        <div id="tab-calc" class="section active">
+            <div class="card">
+                <div class="card-title">🔧 Seleccionar Tornillo</div>
+                <div class="form-group">
+                    <label>Tornillo guardado</label>
+                    <select id="screwSelect" onchange="onScrewSelect()">
+                        <option value="">-- Seleccionar o cargar manual --</option>
+                    </select>
+                </div>
+                <div style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin: 8px 0;">— o cargar manualmente —</div>
+                <div class="form-group">
+                    <label>Nombre / Medida</label>
+                    <input type="text" id="screwName" placeholder="Ej: Tornillo M8 x 40" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Peso de 100 unidades (gramos)</label>
+                    <input type="number" id="weight100" placeholder="Ej: 250" step="0.01" min="0">
+                    <div class="input-hint">Pesá 100 tornillos en una balanza y anotá el valor</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚖️ Cantidad a Calcular</div>
+                <div class="form-group">
+                    <label>Cantidad de unidades</label>
+                    <input type="number" id="quantity" placeholder="Ej: 50" min="1" step="1" oninput="calculate()">
+                </div>
+                <div class="quick-calc">
+                    <button class="quick-btn" onclick="setQuantity(25)">25 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(40)">40 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(50)">50 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(100)">100 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(200)">200 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(500)">500 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(1000)">1000 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(2000)">2000 u.</button>
+                </div>
+            </div>
+
+            <div class="card" style="display: none;" id="saveOption">
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="saveAndCalculate()">
+                        💾 Guardar Tornillo y Calcular
+                    </button>
+                </div>
+            </div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-label">Peso Estimado</div>
+                <div class="result-value" id="resultValue">0</div>
+                <div class="result-unit" id="resultUnit">gramos</div>
+                <div class="result-detail" id="resultDetail">
+                    0 unidades × 0g c/u
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: TORNILLOS -->
+        <div id="tab-screws" class="section">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="number" id="totalScrews">0</div>
+                    <div class="label">Tornillos guardados</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalCalcs">0</div>
+                    <div class="label">Cálculos hoy</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">➕ Agregar Nuevo Tornillo</div>
+                <div class="form-group">
+                    <label>Nombre / Medida</label>
+                    <input type="text" id="newScrewName" placeholder="Ej: Tornillo M6 x 20 Zincado" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Peso de 100 unidades (g)</label>
+                    <input type="number" id="newScrewWeight" placeholder="Ej: 145.5" step="0.01" min="0">
+                </div>
+                <button class="btn btn-primary" onclick="addScrew()">
+                    ➕ Agregar a la lista
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>📋 Mis Tornillos</span>
+                    <span class="badge badge-primary" id="screwCountBadge">0</span>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="searchScrews" placeholder="Buscar tornillo..." oninput="renderScrewList()" autocomplete="off">
+                </div>
+                <div class="screw-list" id="screwList">
+                    <div class="empty-state">
+                        <div class="icon">🔩</div>
+                        <h3>No hay tornillos guardados</h3>
+                        <p>Agregá tu primer tornillo para empezar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: HISTORIAL -->
+        <div id="tab-history" class="section">
+            <div class="card">
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>📜 Últimos Cálculos</span>
+                    <button class="btn-icon delete" onclick="clearHistory()" title="Borrar historial">🗑️</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <h3>Sin historial</h3>
+                        <p>Los cálculos aparecerán aquí</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <h2>✏️ Editar Tornillo</h2>
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label>Peso 100u (g)</label>
+                <input type="number" id="editWeight" step="0.01" min="0">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveEdit()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <div class="footer">
+        CalcPesa v1.0 • Datos guardados en este dispositivo
+    </div>
+
+    <script>
+        // ========================
+        // DATA & STORAGE
+        // ========================
+        const STORAGE_KEY = 'calcpesa_screws';
+        const HISTORY_KEY = 'calcpesa_history';
+        let screws = [];
+        let history = [];
+        let editingIndex = -1;
+
+        function loadData() {
+            try {
+                const s = localStorage.getItem(STORAGE_KEY);
+                if (s) screws = JSON.parse(s);
+                const h = localStorage.getItem(HISTORY_KEY);
+                if (h) history = JSON.parse(h);
+            } catch(e) {
+                console.error('Error loading data', e);
+            }
+        }
+
+        function saveScrews() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(screws));
+        }
+
+        function saveHistory() {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+
+        // ========================
+        // TABS
+        // ========================
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            if (tabName === 'screws') {
+                renderScrewList();
+                updateStats();
+            }
+            if (tabName === 'history') {
+                renderHistory();
+            }
+            if (tabName === 'calc') {
+                updateScrewSelect();
+            }
+        }
+
+        // ========================
+        // CALCULATOR
+        // ========================
+        function onScrewSelect() {
+            const idx = document.getElementById('screwSelect').value;
+            if (idx !== '') {
+                const s = screws[parseInt(idx)];
+                document.getElementById('screwName').value = s.name;
+                document.getElementById('weight100').value = s.weight100;
+                document.getElementById('screwName').readOnly = true;
+                document.getElementById('weight100').readOnly = true;
+            } else {
+                document.getElementById('screwName').value = '';
+                document.getElementById('weight100').value = '';
+                document.getElementById('screwName').readOnly = false;
+                document.getElementById('weight100').readOnly = false;
+            }
+            calculate();
+        }
+
+        function setQuantity(qty) {
+            document.getElementById('quantity').value = qty;
+            calculate();
+        }
+
+        function calculate() {
+            const name = document.getElementById('screwName').value.trim();
+            const w100 = parseFloat(document.getElementById('weight100').value);
+            const qty = parseInt(document.getElementById('quantity').value);
+            const resultCard = document.getElementById('resultCard');
+            const saveOption = document.getElementById('saveOption');
+
+            if (!w100 || !qty || w100 <= 0 || qty <= 0) {
+                resultCard.classList.remove('show');
+                saveOption.style.display = 'none';
+                return;
+            }
+
+            const unitWeight = w100 / 100;
+            const totalWeight = unitWeight * qty;
+
+            let displayValue, displayUnit;
+            if (totalWeight >= 1000) {
+                displayValue = (totalWeight / 1000).toFixed(3);
+                displayUnit = 'kilogramos';
+            } else {
+                displayValue = totalWeight.toFixed(2);
+                displayUnit = 'gramos';
+            }
+
+            document.getElementById('resultValue').textContent = displayValue;
+            document.getElementById('resultUnit').textContent = displayUnit;
+            document.getElementById('resultDetail').textContent = 
+                `${qty} unidades × ${unitWeight.toFixed(3)}g c/u = ${totalWeight.toFixed(2)}g total`;
+
+            resultCard.classList.add('show');
+
+            // Mostrar opción de guardar si no está en la lista
+            const exists = screws.some(s => s.name.toLowerCase() === name.toLowerCase());
+            saveOption.style.display = (name && !exists) ? 'block' : 'none';
+
+            // Guardar en historial
+            addToHistory(name, qty, totalWeight);
+        }
+
+        function addToHistory(name, qty, weight) {
+            if (!name) return;
+            const entry = {
+                name: name,
+                qty: qty,
+                weight: weight,
+                time: new Date().toISOString()
+            };
+            history.unshift(entry);
+            if (history.length > 50) history = history.slice(0, 50);
+            saveHistory();
+        }
+
+        function saveAndCalculate() {
+            const name = document.getElementById('screwName').value.trim();
+            const w100 = parseFloat(document.getElementById('weight100').value);
+
+            if (!name || !w100) {
+                showToast('Completá todos los campos', 'error');
+                return;
+            }
+
+            screws.push({ name: name, weight100: w100, created: new Date().toISOString() });
+            saveScrews();
+            updateScrewSelect();
+            document.getElementById('saveOption').style.display = 'none';
+            showToast('Tornillo guardado ✅');
+        }
+
+        // ========================
+        // SCREW LIST
+        // ========================
+        function updateScrewSelect() {
+            const select = document.getElementById('screwSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Seleccionar o cargar manual --</option>';
+
+            screws.forEach((s, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${s.name} (${s.weight100}g/100u)`;
+                select.appendChild(opt);
+            });
+
+            select.value = currentVal;
+        }
+
+        function renderScrewList() {
+            const list = document.getElementById('screwList');
+            const search = document.getElementById('searchScrews').value.toLowerCase();
+            const filtered = screws.filter(s => s.name.toLowerCase().includes(search));
+
+            document.getElementById('screwCountBadge').textContent = screws.length;
+            document.getElementById('totalScrews').textContent = screws.length;
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔩</div>
+                        <h3>${screws.length === 0 ? 'No hay tornillos guardados' : 'No se encontraron resultados'}</h3>
+                        <p>${screws.length === 0 ? 'Agregá tu primer tornillo para empezar' : 'Probá con otra búsqueda'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = filtered.map((s, i) => {
+                const originalIndex = screws.indexOf(s);
+                return `
+                    <div class="screw-item">
+                        <div class="screw-info">
+                            <h3>${escapeHtml(s.name)}</h3>
+                            <p>💾 ${s.weight100}g cada 100u • ${(s.weight100/100).toFixed(3)}g c/u</p>
+                        </div>
+                        <div class="screw-actions">
+                            <button class="btn-icon use" onclick="useScrew(${originalIndex})" title="Usar">⚖️</button>
+                            <button class="btn-icon edit" onclick="openEdit(${originalIndex})" title="Editar">✏️</button>
+                            <button class="btn-icon delete" onclick="deleteScrew(${originalIndex})" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function useScrew(index) {
+            const s = screws[index];
+            document.getElementById('screwSelect').value = index;
+            document.getElementById('screwName').value = s.name;
+            document.getElementById('weight100').value = s.weight100;
+            document.getElementById('screwName').readOnly = true;
+            document.getElementById('weight100').readOnly = true;
+
+            // Cambiar a tab calcular
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelector('.tab:first-child').classList.add('active');
+            document.getElementById('tab-calc').classList.add('active');
+
+            document.getElementById('quantity').focus();
+            showToast(`Listo: ${s.name}`);
+        }
+
+        function addScrew() {
+            const name = document.getElementById('newScrewName').value.trim();
+            const weight = parseFloat(document.getElementById('newScrewWeight').value);
+
+            if (!name || !weight || weight <= 0) {
+                showToast('Completá todos los campos correctamente', 'error');
+                return;
+            }
+
+            screws.push({ name: name, weight100: weight, created: new Date().toISOString() });
+            saveScrews();
+
+            document.getElementById('newScrewName').value = '';
+            document.getElementById('newScrewWeight').value = '';
+
+            renderScrewList();
+            updateScrewSelect();
+            updateStats();
+            showToast('Tornillo agregado ✅');
+        }
+
+        function openEdit(index) {
+            editingIndex = index;
+            const s = screws[index];
+            document.getElementById('editName').value = s.name;
+            document.getElementById('editWeight').value = s.weight100;
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('show');
+            editingIndex = -1;
+        }
+
+        function saveEdit() {
+            if (editingIndex < 0) return;
+            const name = document.getElementById('editName').value.trim();
+            const weight = parseFloat(document.getElementById('editWeight').value);
+
+            if (!name || !weight || weight <= 0) {
+                showToast('Datos inválidos', 'error');
+                return;
+            }
+
+            screws[editingIndex].name = name;
+            screws[editingIndex].weight100 = weight;
+            saveScrews();
+            renderScrewList();
+            updateScrewSelect();
+            closeModal();
+            showToast('Tornillo actualizado ✅');
+        }
+
+        function deleteScrew(index) {
+            if (!confirm(`¿Eliminar "${screws[index].name}"?`)) return;
+            screws.splice(index, 1);
+            saveScrews();
+            renderScrewList();
+            updateScrewSelect();
+            updateStats();
+            showToast('Tornillo eliminado');
+        }
+
+        // ========================
+        // HISTORY
+        // ========================
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <h3>Sin historial</h3>
+                        <p>Los cálculos aparecerán aquí</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const today = new Date().toDateString();
+            const todayCount = history.filter(h => new Date(h.time).toDateString() === today).length;
+            document.getElementById('totalCalcs').textContent = todayCount;
+
+            list.innerHTML = history.map(h => {
+                const d = new Date(h.time);
+                const timeStr = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+
+                let wStr;
+                if (h.weight >= 1000) {
+                    wStr = (h.weight / 1000).toFixed(3) + ' kg';
+                } else {
+                    wStr = h.weight.toFixed(2) + ' g';
+                }
+
+                return `
+                    <div class="history-item">
+                        <div>
+                            <div style="font-weight: 600;">${escapeHtml(h.name)}</div>
+                            <div style="color: var(--text-light); font-size: 0.8rem;">${h.qty} unidades → ${wStr}</div>
+                        </div>
+                        <div class="time">${dateStr}<br>${timeStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearHistory() {
+            if (!confirm('¿Borrar todo el historial?')) return;
+            history = [];
+            saveHistory();
+            renderHistory();
+            showToast('Historial borrado');
+        }
+
+        // ========================
+        // STATS
+        // ========================
+        function updateStats() {
+            document.getElementById('totalScrews').textContent = screws.length;
+            const today = new Date().toDateString();
+            const todayCount = history.filter(h => new Date(h.time).toDateString() === today).length;
+            document.getElementById('totalCalcs').textContent = todayCount;
+        }
+
+        // ========================
+        // UTILS
+        // ========================
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cerrar modal al clickear afuera
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ========================
+        // INIT
+        // ========================
+        loadData();
+        updateScrewSelect();
+        updateStats();
+
+        // Si hay datos de ejemplo pre-cargados (demo)
+        if (screws.length === 0) {
+            // Opcional: descomentar para tener datos de ejemplo
+            // screws = [
+            //     { name: "Tornillo M6 x 20 Zincado", weight100: 145.5, created: new Date().toISOString() },
+            //     { name: "Tornillo M8 x 40 Galvanizado", weight100: 320.0, created: new Date().toISOString() },
+            //     { name: "Tornillo M10 x 50 Inox", weight100: 580.2, created: new Date().toISOString() }
+            // ];
+            // saveScrews();
+            // updateScrewSelect();
+        }
+    </script>
+</body>
+</html>

@@ -7,918 +7,134 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚙️%3C/text%3E%3C/svg%3E">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
-            --primary: #ff6b00;
-            --primary-dark: #e55a00;
-            --success: #00e676;
-            --danger: #ff1744;
-            --warning: #ffea00;
-            --info: #00b0ff;
-            --bg: #000000;
-            --card: #111111;
-            --text: #ffffff;
-            --text-light: #888888;
-            --border: #333333;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.8), 0 2px 4px -1px rgba(0, 0, 0, 0.6);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -2px rgba(0, 0, 0, 0.7);
+            --primary: #ff6b00; --primary-dark: #e55a00; --success: #00e676;
+            --danger: #ff1744; --warning: #ffea00; --info: #00b0ff;
+            --bg: #000000; --card: #111111; --text: #ffffff;
+            --text-light: #888888; --border: #333333;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.8), 0 2px 4px -1px rgba(0,0,0,0.6);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.8), 0 4px 6px -2px rgba(0,0,0,0.7);
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
-
-        .header {
-            background: #000000;
-            color: var(--primary);
-            padding: 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow);
-            border-bottom: 4px solid var(--primary);
-        }
-
-        .header h1 {
-            text-shadow: 0 0 20px rgba(255, 107, 0, 0.5), 0 0 40px rgba(255, 107, 0, 0.2);
-            letter-spacing: 2px;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .header p {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            margin-top: 4px;
-        }
-
-        .sync-status {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(249,115,22,0.2);
-            border: 1px solid var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
+        .header { background: #000; color: var(--primary); padding: 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); border-bottom: 4px solid var(--primary); }
+        .header h1 { text-shadow: 0 0 20px rgba(255,107,0,0.5); letter-spacing: 2px; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .header p { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
+        .sync-status { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; background: rgba(249,115,22,0.2); border: 1px solid var(--primary); display: flex; align-items: center; gap: 4px; cursor: pointer; }
         .sync-status.online { background: rgba(34,197,94,0.2); border-color: var(--success); }
         .sync-status.offline { background: rgba(239,68,68,0.2); border-color: var(--danger); }
-        .sync-status.syncing { background: rgba(245,158,11,0.2); border-color: var(--warning); }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: #0a0a0a;
-            padding: 6px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border: 2px solid var(--border);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px 8px;
-            border: none;
-            background: transparent;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: #000000;
-            box-shadow: 0 0 15px rgba(255, 107, 0, 0.4), 0 2px 4px rgba(255, 107, 0, 0.3);
-            font-weight: 800;
-        }
-
-        .tab:active {
-            transform: scale(0.98);
-        }
-
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            font-family: inherit;
-            background: #000000;
-            color: var(--text);
-            transition: all 0.2s;
-            -webkit-appearance: none;
-            font-weight: 500;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: #000000;
-            box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.25), 0 0 20px rgba(255, 107, 0, 0.1);
-        }
-
-        input::placeholder {
-            color: #555555;
-        }
-
-        .input-hint {
-            font-size: 0.8rem;
-            color: var(--text);
-            margin-top: 4px;
-            opacity: 0.7;
-        }
-
-        .step-indicator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .step-number {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1rem;
-            flex-shrink: 0;
-            box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
-        }
-
-        .step-label {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .search-predictive {
-            position: relative;
-        }
-
-        .search-predictive input {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        #step2Card.active {
-            opacity: 1;
-            pointer-events: all;
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(255, 107, 0, 0.1);
-        }
-
-        #step2Card.active .step-number {
-            background: var(--success);
-            box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
-        }
-
-        #step2Card.active .step-label {
-            color: var(--success);
-        }
-
-        .no-suggestions-btn {
-            padding: 12px 16px;
-            text-align: center;
-            cursor: pointer;
-            color: var(--primary);
-            font-weight: 700;
-            border-top: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-
-        .no-suggestions-btn:hover {
-            background: rgba(255, 107, 0, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: #000000;
-            box-shadow: 0 0 20px rgba(255, 107, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.3);
-            font-weight: 800;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            box-shadow: 0 0 30px rgba(255, 107, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: #000000;
-            box-shadow: 0 0 20px rgba(0, 230, 118, 0.3), 0 4px 6px rgba(0, 0, 0, 0.3);
-            font-weight: 800;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: #000000;
-            box-shadow: 0 0 20px rgba(255, 23, 68, 0.3), 0 4px 6px rgba(0, 0, 0, 0.3);
-            font-weight: 800;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: #000000;
-            box-shadow: 0 0 20px rgba(255, 234, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.3);
-            font-weight: 800;
-        }
-
-        .btn-secondary {
-            background: #1a1a1a;
-            color: var(--text);
-            border: 2px solid var(--border);
-            font-weight: 700;
-        }
-
-        .btn-info {
-            background: var(--info);
-            color: #000000;
-            font-weight: 800;
-        }
-
-        .result-card {
-            background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
-            color: var(--primary);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 20px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(255, 107, 0, 0.3), var(--shadow-lg);
-            border: 3px solid var(--primary);
-            display: none;
-        }
-
-        .result-card.show {
-            display: block;
-            animation: slideUp 0.4s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-label {
-            font-size: 0.85rem;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .result-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-            color: var(--primary);
-            text-shadow: 0 0 20px rgba(255, 107, 0, 0.6), 0 0 40px rgba(255, 107, 0, 0.3);
-        }
-
-        .result-unit {
-            font-size: 1rem;
-            color: var(--text);
-            font-weight: 600;
-        }
-
-        .result-detail {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 2px solid var(--primary);
-            font-size: 0.9rem;
-            color: var(--text);
-            font-weight: 500;
-        }
-
-        .screw-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .screw-item {
-            background: #0a0a0a;
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-            border: 2px solid var(--border);
-        }
-
-        .screw-item:hover {
-            border-color: var(--primary);
-            transform: translateX(4px);
-            background: #1a1a1a;
-            box-shadow: 0 0 15px rgba(255, 107, 0, 0.15);
-        }
-
-        .screw-info h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--text);
-        }
-
-        .screw-info p {
-            font-size: 0.85rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .screw-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: all 0.2s;
-        }
-
-        .btn-icon:active {
-            transform: scale(0.9);
-        }
-
-        .btn-icon.edit {
-            background: rgba(255, 107, 0, 0.15);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .btn-icon.delete {
-            background: rgba(255, 23, 68, 0.15);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .btn-icon.use {
-            background: rgba(0, 230, 118, 0.15);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text);
-        }
-
-        .empty-state .icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #000000;
-            color: var(--text);
-            padding: 16px 28px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            z-index: 1000;
-            opacity: 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 30px rgba(255, 107, 0, 0.3), var(--shadow-lg);
-            white-space: nowrap;
-            max-width: 90vw;
-            text-align: center;
-            border: 2px solid var(--primary);
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success { background: #000000; border-color: var(--success); color: var(--success); box-shadow: 0 0 30px rgba(0, 230, 118, 0.3); }
-        .toast.error { background: #000000; border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255, 23, 68, 0.3); }
-        .toast.warning { background: #000000; border-color: var(--warning); color: var(--warning); box-shadow: 0 0 30px rgba(255, 234, 0, 0.3); }
-        .toast.info { background: #000000; border-color: var(--info); color: var(--info); box-shadow: 0 0 30px rgba(0, 176, 255, 0.3); }
-
-        .quick-calc {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .quick-btn {
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            background: #0a0a0a;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text);
-        }
-
-        .quick-btn:hover {
-            border-color: var(--primary);
-            background: #1a1a1a;
-            color: var(--primary);
-            box-shadow: 0 0 15px rgba(255, 107, 0, 0.2);
-        }
-
-        .quick-btn:active {
-            transform: scale(0.95);
-        }
-
-        .quick-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            border-color: var(--border);
-            color: var(--text-light);
-        }
-
-        .quick-btn:disabled:hover {
-            background: #0a0a0a;
-            box-shadow: none;
-            color: var(--text-light);
-        }
-
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            background: #0a0a0a;
-            border-radius: 10px;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-            border: 1px solid var(--border);
-        }
-
-        .history-item .time {
-            color: var(--text-light);
-            font-size: 0.8rem;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            padding: 20px;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal {
-            background: #000000;
-            border-radius: 20px;
-            padding: 24px;
-            width: 100%;
-            max-width: 400px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: modalIn 0.3s ease;
-            border: 3px solid var(--primary);
-            box-shadow: 0 0 40px rgba(255, 107, 0, 0.2);
-        }
-
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal h2 {
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .modal-actions .btn {
-            flex: 1;
-        }
-
-        .search-box {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .search-box input {
-            padding-left: 44px;
-        }
-
-        .search-box::before {
-            content: "🔍";
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.1rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .stat-box {
-            background: #0a0a0a;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            border: 2px solid var(--primary);
-        }
-
-        .stat-box .number {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .stat-box .label {
-            font-size: 0.8rem;
-            color: var(--text);
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #000000;
-            padding: 12px 20px;
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--primary);
-            border-top: 2px solid var(--primary);
-            z-index: 50;
-            font-weight: 700;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge-primary {
-            background: rgba(255, 107, 0, 0.15);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .suggestions-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #000000;
-            border: 3px solid var(--primary);
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            max-height: 280px;
-            overflow-y: auto;
-            z-index: 50;
-            box-shadow: 0 0 30px rgba(255, 107, 0, 0.2), 0 10px 15px -3px rgba(0,0,0,0.5);
-            margin-top: -4px;
-            padding-top: 4px;
-        }
-
-        .suggestion-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.15s;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-
-        .suggestion-item:hover {
-            background: #1a1a1a;
-            border-left: 3px solid var(--primary);
-        }
-
-        .suggestion-item.selected {
-            background: var(--primary);
-            color: #000000;
-            border-left: 3px solid var(--primary);
-        }
-
-        .suggestion-item.selected .suggestion-meta {
-            color: rgba(0,0,0,0.7);
-            font-weight: 700;
-        }
-
-        .suggestion-text {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: var(--text);
-        }
-
-        .suggestion-meta {
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .suggestion-highlight {
-            background: rgba(255, 107, 0, 0.4);
-            border-radius: 2px;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .suggestion-item.selected .suggestion-highlight {
-            background: rgba(0,0,0,0.2);
-            color: #000000;
-        }
-
-        .no-suggestions {
-            padding: 16px;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        .search-box-predictive input:focus {
-            border-radius: 12px 12px 0 0;
-            border-bottom-color: transparent;
-            box-shadow: 0 0 20px rgba(255, 107, 0, 0.15);
-        }
-
-        .sync-panel {
-            background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
-            color: var(--text);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 3px solid var(--primary);
-            box-shadow: 0 0 30px rgba(255, 107, 0, 0.15);
-        }
-
-        .sync-panel h3 {
-            font-size: 1rem;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sync-code {
-            background: #000000;
-            border-radius: 10px;
-            padding: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            text-align: center;
-            letter-spacing: 2px;
-            margin: 12px 0;
-            word-break: break-all;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            font-weight: 800;
-            text-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
-        }
-
-        .sync-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .sync-actions .btn {
-            flex: 1;
-            padding: 10px;
-            font-size: 0.85rem;
-        }
-
-        .code-input {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .code-input input {
-            flex: 1;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-            font-size: 1.1rem;
-        }
-
-        .info-box {
-            background: #0a0a0a;
-            border-left: 4px solid var(--primary);
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            font-size: 0.85rem;
-            color: var(--text);
-            font-weight: 500;
-        }
-
-        .info-box.warning {
-            background: #0a0a0a;
-            border-left-color: var(--warning);
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(249,115,22,0.3);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 400px) {
-            .header h1 { font-size: 1.2rem; }
-            .result-value { font-size: 2rem; }
-            .quick-calc { grid-template-columns: 1fr 1fr; }
-            .sync-actions { flex-direction: column; }
-            .code-input { flex-direction: column; }
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
+        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #0a0a0a; padding: 6px; border-radius: 12px; box-shadow: var(--shadow); border: 2px solid var(--border); }
+        .tab { flex: 1; padding: 12px 8px; border: none; background: transparent; color: var(--text-light); font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .tab.active { background: var(--primary); color: #000; box-shadow: 0 0 15px rgba(255,107,0,0.4); font-weight: 800; }
+        .tab:active { transform: scale(0.98); }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .step-indicator { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
+        .step-number { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(255,107,0,0.3); }
+        .step-label { font-size: 1.1rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        #step2Card { opacity: 0.4; pointer-events: none; transition: all 0.3s; filter: grayscale(0.5); }
+        #step2Card.active { opacity: 1; pointer-events: all; border-color: var(--primary); box-shadow: 0 0 20px rgba(255,107,0,0.1); filter: grayscale(0); }
+        #step2Card.active .step-number { background: var(--success); box-shadow: 0 0 15px rgba(0,230,118,0.3); }
+        #step2Card.active .step-label { color: var(--success); }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; font-family: inherit; background: #000; color: var(--text); transition: all 0.2s; -webkit-appearance: none; font-weight: 500; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); background: #000; box-shadow: 0 0 0 4px rgba(255,107,0,0.25), 0 0 20px rgba(255,107,0,0.1); }
+        input::placeholder { color: #555; }
+        input:disabled { opacity: 0.5; cursor: not-allowed; }
+        .input-hint { font-size: 0.8rem; color: var(--text); margin-top: 4px; opacity: 0.7; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: #000; box-shadow: 0 0 20px rgba(255,107,0,0.3); font-weight: 800; }
+        .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 0 30px rgba(255,107,0,0.5); }
+        .btn-success { background: var(--success); color: #000; box-shadow: 0 0 20px rgba(0,230,118,0.3); font-weight: 800; }
+        .btn-danger { background: var(--danger); color: #000; box-shadow: 0 0 20px rgba(255,23,68,0.3); font-weight: 800; }
+        .btn-warning { background: var(--warning); color: #000; box-shadow: 0 0 20px rgba(255,234,0,0.3); font-weight: 800; }
+        .btn-secondary { background: #1a1a1a; color: var(--text); border: 2px solid var(--border); font-weight: 700; }
+        .btn-info { background: var(--info); color: #000; font-weight: 800; }
+        .result-card { background: linear-gradient(135deg, #000 0%, #0a0a0a 100%); color: var(--primary); border-radius: 16px; padding: 24px; margin-top: 20px; text-align: center; box-shadow: 0 0 30px rgba(255,107,0,0.3); border: 3px solid var(--primary); display: none; }
+        .result-card.show { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-label { font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; font-weight: 700; }
+        .result-value { font-size: 2.5rem; font-weight: 800; margin-bottom: 4px; color: var(--primary); text-shadow: 0 0 20px rgba(255,107,0,0.6); }
+        .result-unit { font-size: 1rem; color: var(--text); font-weight: 600; }
+        .result-detail { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--primary); font-size: 0.9rem; color: var(--text); font-weight: 500; }
+        .quick-calc { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
+        .quick-btn { padding: 14px 8px; border: 2px solid var(--border); border-radius: 10px; background: #0a0a0a; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; color: var(--text); }
+        .quick-btn:hover { border-color: var(--primary); background: #1a1a1a; color: var(--primary); box-shadow: 0 0 15px rgba(255,107,0,0.2); }
+        .quick-btn:active { transform: scale(0.95); }
+        .quick-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: var(--border); color: var(--text-light); }
+        .search-predictive { position: relative; }
+        .search-predictive input { font-size: 1.1rem; font-weight: 500; }
+        .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #000; border: 3px solid var(--primary); border-top: none; border-radius: 0 0 12px 12px; max-height: 280px; overflow-y: auto; z-index: 50; box-shadow: 0 0 30px rgba(255,107,0,0.2); margin-top: -4px; padding-top: 4px; }
+        .suggestion-item { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s; border-bottom: 1px solid var(--border); }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #1a1a1a; border-left: 3px solid var(--primary); }
+        .suggestion-item.selected { background: var(--primary); color: #000; border-left: 3px solid var(--primary); }
+        .suggestion-item.selected .suggestion-meta { color: rgba(0,0,0,0.7); font-weight: 700; }
+        .suggestion-text { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+        .suggestion-meta { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+        .suggestion-highlight { background: rgba(255,107,0,0.4); border-radius: 2px; font-weight: 800; color: var(--primary); }
+        .suggestion-item.selected .suggestion-highlight { background: rgba(0,0,0,0.2); color: #000; }
+        .no-suggestions { padding: 16px; text-align: center; color: var(--text); font-size: 0.9rem; background: #000; font-weight: 600; }
+        .no-suggestions-btn { padding: 12px 16px; text-align: center; cursor: pointer; color: var(--primary); font-weight: 700; border-top: 1px solid var(--border); transition: all 0.2s; background: #0a0a0a; }
+        .no-suggestions-btn:hover { background: rgba(255,107,0,0.1); }
+        .selected-screw-box { margin-top: 16px; padding: 14px; background: #0a0a0a; border-radius: 10px; border: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .selected-screw-name { font-weight: 700; color: var(--primary); font-size: 1rem; }
+        .selected-screw-weight { font-size: 0.85rem; color: var(--text); margin-top: 2px; }
+        .screw-list { display: flex; flex-direction: column; gap: 12px; }
+        .screw-item { background: #0a0a0a; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; border: 2px solid var(--border); }
+        .screw-item:hover { border-color: var(--primary); transform: translateX(4px); background: #1a1a1a; box-shadow: 0 0 15px rgba(255,107,0,0.15); }
+        .screw-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+        .screw-info p { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
+        .screw-actions { display: flex; gap: 8px; }
+        .btn-icon { width: 40px; height: 40px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s; }
+        .btn-icon:active { transform: scale(0.9); }
+        .btn-icon.edit { background: rgba(255,107,0,0.15); color: var(--primary); border: 1px solid var(--primary); }
+        .btn-icon.delete { background: rgba(255,23,68,0.15); color: var(--danger); border: 1px solid var(--danger); }
+        .btn-icon.use { background: rgba(0,230,118,0.15); color: var(--success); border: 1px solid var(--success); }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text); }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+        .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--primary); font-weight: 700; }
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: #000; color: var(--text); padding: 16px 28px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; z-index: 1000; opacity: 0; transition: all 0.3s ease; box-shadow: 0 0 30px rgba(255,107,0,0.3); white-space: nowrap; max-width: 90vw; text-align: center; border: 2px solid var(--primary); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.success { background: #000; border-color: var(--success); color: var(--success); box-shadow: 0 0 30px rgba(0,230,118,0.3); }
+        .toast.error { background: #000; border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255,23,68,0.3); }
+        .toast.warning { background: #000; border-color: var(--warning); color: var(--warning); box-shadow: 0 0 30px rgba(255,234,0,0.3); }
+        .toast.info { background: #000; border-color: var(--info); color: var(--info); box-shadow: 0 0 30px rgba(0,176,255,0.3); }
+        .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+        .history-item { background: #0a0a0a; border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; border: 1px solid var(--border); }
+        .history-item .time { color: var(--text-light); font-size: 0.8rem; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #000; border-radius: 20px; padding: 24px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.3s ease; border: 3px solid var(--primary); box-shadow: 0 0 40px rgba(255,107,0,0.2); }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal h2 { margin-bottom: 20px; font-size: 1.3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-actions .btn { flex: 1; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .stat-box { background: #0a0a0a; border-radius: 12px; padding: 16px; text-align: center; border: 2px solid var(--primary); }
+        .stat-box .number { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .stat-box .label { font-size: 0.8rem; color: var(--text); margin-top: 4px; font-weight: 600; }
+        .sync-panel { background: linear-gradient(135deg, #000 0%, #0a0a0a 100%); color: var(--text); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 3px solid var(--primary); box-shadow: 0 0 30px rgba(255,107,0,0.15); }
+        .sync-panel h3 { font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .sync-code { background: #000; border-radius: 10px; padding: 12px; font-family: 'Courier New', monospace; font-size: 1.2rem; text-align: center; letter-spacing: 2px; margin: 12px 0; word-break: break-all; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; text-shadow: 0 0 10px rgba(255,107,0,0.5); }
+        .sync-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .sync-actions .btn { flex: 1; padding: 10px; font-size: 0.85rem; }
+        .info-box { background: #0a0a0a; border-left: 4px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text); font-weight: 500; }
+        .info-box.warning { background: #0a0a0a; border-left-color: var(--warning); }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-primary { background: rgba(255,107,0,0.15); color: var(--primary); border: 1px solid var(--primary); }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #000; padding: 12px 20px; text-align: center; font-size: 0.75rem; color: var(--primary); border-top: 2px solid var(--primary); z-index: 50; font-weight: 700; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,107,0,0.3); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 400px) { .header h1 { font-size: 1.2rem; } .result-value { font-size: 2rem; } .quick-calc { grid-template-columns: 1fr 1fr; } .sync-actions { flex-direction: column; } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     </style>
 <base target="_blank">
 </head>
@@ -942,7 +158,6 @@
 
         <!-- TAB: CALCULAR -->
         <div id="tab-calc" class="section active">
-            <!-- PASO 1: BUSCAR TORNILLO -->
             <div class="card">
                 <div class="step-indicator">
                     <span class="step-number">1</span>
@@ -957,18 +172,14 @@
                         <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
                         <button id="calcClearSearch" onclick="clearCalcSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; display: none; padding: 4px; color: var(--primary);">❌</button>
                     </div>
-                    <div id="calcSuggestions" class="suggestions-dropdown" style="display: none;">
-                        <!-- Sugerencias -->
-                    </div>
+                    <div id="calcSuggestions" class="suggestions-dropdown" style="display: none;"></div>
                 </div>
-                <div id="selectedScrewInfo" style="display: none; margin-top: 16px; padding: 12px; background: #0a0a0a; border-radius: 10px; border: 2px solid var(--primary);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 700; color: var(--primary); font-size: 1rem;" id="selectedScrewName">-</div>
-                            <div style="font-size: 0.85rem; color: var(--text); margin-top: 2px;" id="selectedScrewWeight">-</div>
-                        </div>
-                        <button class="btn-icon delete" onclick="clearSelectedScrew()" title="Cambiar">🗑️</button>
+                <div id="selectedScrewInfo" class="selected-screw-box" style="display: none;">
+                    <div>
+                        <div class="selected-screw-name" id="selectedScrewName">-</div>
+                        <div class="selected-screw-weight" id="selectedScrewWeight">-</div>
                     </div>
+                    <button class="btn-icon delete" onclick="clearSelectedScrew()" title="Cambiar">🗑️</button>
                 </div>
                 <div id="newScrewForm" style="display: none; margin-top: 16px;">
                     <div style="border-top: 2px solid var(--border); padding-top: 16px;">
@@ -982,15 +193,12 @@
                             <input type="number" id="newCalcWeight100" placeholder="Ej: 250" step="0.01" min="0">
                             <div class="input-hint">Pesá 100 tornillos en balanza y anotá el valor</div>
                         </div>
-                        <button class="btn btn-success" onclick="saveNewScrewFromCalc()" style="margin-top: 8px;">
-                            💾 Guardar y Usar
-                        </button>
+                        <button class="btn btn-success" onclick="saveNewScrewFromCalc()" style="margin-top: 8px;">💾 Guardar y Usar</button>
                     </div>
                 </div>
             </div>
 
-            <!-- PASO 2: CANTIDAD -->
-            <div class="card" id="step2Card" style="opacity: 0.5; pointer-events: none; transition: all 0.3s;">
+            <div class="card" id="step2Card">
                 <div class="step-indicator">
                     <span class="step-number">2</span>
                     <span class="step-label">Cantidad</span>
@@ -1011,14 +219,11 @@
                 </div>
             </div>
 
-            <!-- RESULTADO -->
             <div class="result-card" id="resultCard">
                 <div class="result-label">Peso Estimado</div>
                 <div class="result-value" id="resultValue">0</div>
                 <div class="result-unit" id="resultUnit">gramos</div>
-                <div class="result-detail" id="resultDetail">
-                    0 unidades × 0g c/u
-                </div>
+                <div class="result-detail" id="resultDetail">0 unidades × 0g c/u</div>
             </div>
         </div>
 
@@ -1034,9 +239,8 @@
                     <div class="label">Cálculos hoy</div>
                 </div>
             </div>
-
             <div class="card">
-                <div class="card-title">➕ Agregar Nuevo Tornillo</div>
+                <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">➕ Agregar Nuevo Tornillo</div>
                 <div class="form-group">
                     <label>Nombre / Medida</label>
                     <input type="text" id="newScrewName" placeholder="Ej: Tornillo M6 x 20 Zincado" autocomplete="off">
@@ -1045,25 +249,16 @@
                     <label>Peso de 100 unidades (g)</label>
                     <input type="number" id="newScrewWeight" placeholder="Ej: 145.5" step="0.01" min="0">
                 </div>
-                <button class="btn btn-primary" onclick="addScrew()">
-                    ➕ Agregar a la lista
-                </button>
+                <button class="btn btn-primary" onclick="addScrew()">➕ Agregar a la lista</button>
             </div>
-
             <div class="card">
-                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>📋 Mis Tornillos</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">📋 Mis Tornillos</span>
                     <span class="badge badge-primary" id="screwCountBadge">0</span>
                 </div>
-                <div class="search-box-predictive" style="position: relative; margin-bottom: 16px;">
-                    <div style="position: relative;">
-                        <input type="text" id="searchScrews" placeholder="Buscar tornillo..." oninput="onSearchInput()" onkeydown="onSearchKeydown(event)" onfocus="onSearchFocus()" onblur="onSearchBlur()" autocomplete="off" style="padding-left: 44px; padding-right: 40px;">
-                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
-                        <button id="clearSearchBtn" onclick="clearSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; display: none; padding: 4px;">❌</button>
-                    </div>
-                    <div id="searchSuggestions" class="suggestions-dropdown" style="display: none;">
-                        <!-- Sugerencias se insertan aquí -->
-                    </div>
+                <div style="position: relative; margin-bottom: 16px;">
+                    <input type="text" id="searchScrews" placeholder="Buscar tornillo..." oninput="renderScrewList()" autocomplete="off" style="padding-left: 44px;">
+                    <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
                 </div>
                 <div class="screw-list" id="screwList">
                     <div class="empty-state">
@@ -1079,78 +274,46 @@
         <div id="tab-sync" class="section">
             <div class="sync-panel" id="syncPanel">
                 <h3>🌐 Sincronización</h3>
-                <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 12px;">
-                    Compartí tus tornillos entre todos tus dispositivos usando un código.
-                </p>
-
+                <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 12px;">Compartí tus tornillos entre todos tus dispositivos usando un código.</p>
                 <div id="syncHasCode" style="display: none;">
                     <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px;">Tu código de sincronización:</div>
                     <div class="sync-code" id="syncCodeDisplay">---</div>
                     <div class="sync-actions">
-                        <button class="btn btn-success" onclick="copySyncCode()">
-                            📋 Copiar Código
-                        </button>
-                        <button class="btn btn-warning" onclick="shareViaWhatsApp()">
-                            📱 Compartir
-                        </button>
+                        <button class="btn btn-success" onclick="copySyncCode()">📋 Copiar</button>
+                        <button class="btn btn-warning" onclick="shareViaWhatsApp()">📱 WhatsApp</button>
                     </div>
-                    <button class="btn btn-danger" style="margin-top: 8px;" onclick="disconnectSync()">
-                        🔌 Desconectar
-                    </button>
+                    <button class="btn btn-danger" style="margin-top: 8px;" onclick="disconnectSync()">🔌 Desconectar</button>
                 </div>
-
                 <div id="syncNoCode">
-                    <div class="info-box">
-                        <strong>¿Cómo funciona?</strong><br>
-                        Se crea un código único que vincula todos tus dispositivos. Los tornillos se guardan online y se sincronizan automáticamente.
-                    </div>
-                    <button class="btn btn-primary" onclick="createNewSync()">
-                        🆕 Crear Nuevo Código
-                    </button>
-                    <div style="text-align: center; margin: 16px 0; color: rgba(255,255,255,0.5); font-size: 0.9rem;">— o —</div>
+                    <div class="info-box"><strong>¿Cómo funciona?</strong><br>Se crea un código único que vincula todos tus dispositivos.</div>
+                    <button class="btn btn-primary" onclick="createNewSync()">🆕 Crear Código</button>
+                    <div style="text-align: center; margin: 16px 0; color: rgba(255,255,255,0.5);">— o —</div>
                     <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px;">Ya tenés un código?</div>
-                    <div class="code-input">
-                        <input type="text" id="joinCode" placeholder="ABC123XYZ" maxlength="20" autocomplete="off">
-                        <button class="btn btn-success" onclick="joinSync()" style="width: auto; padding: 14px 20px;">
-                            🔗 Unirse
-                        </button>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <input type="text" id="joinCode" placeholder="ABC123XYZ" maxlength="20" autocomplete="off" style="flex: 1; text-align: center; font-family: monospace; letter-spacing: 2px; font-size: 1.1rem;">
+                        <button class="btn btn-success" onclick="joinSync()" style="width: auto; padding: 14px 20px;">🔗 Unirse</button>
                     </div>
                 </div>
             </div>
-
             <div class="card">
-                <div class="card-title">💾 Backup Manual</div>
-                <div class="info-box warning">
-                    Si no querés usar sincronización online, podés exportar/importar los datos como archivo JSON.
-                </div>
+                <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">💾 Backup Manual</div>
+                <div class="info-box warning">Exportá/importá los datos como archivo JSON.</div>
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="exportData()">
-                        📤 Exportar JSON
-                    </button>
+                    <button class="btn btn-secondary" onclick="exportData()">📤 Exportar</button>
                     <label class="btn btn-info" style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                        📥 Importar JSON
+                        📥 Importar
                         <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(this)">
                     </label>
                 </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">📱 Compartir App</div>
-                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px;">
-                    Compartí el enlace de la app para que otros la usen:
-                </p>
-                <button class="btn btn-primary" onclick="shareApp()">
-                    🔗 Copiar Link de la App
-                </button>
             </div>
         </div>
 
         <!-- TAB: HISTORIAL -->
         <div id="tab-history" class="section">
             <div class="card">
-                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>📜 Últimos Cálculos</span>
-                    <button class="btn-icon delete" onclick="clearHistory()" title="Borrar historial">🗑️</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">📜 Últimos Cálculos</span>
+                    <button class="btn-icon delete" onclick="clearHistory()" title="Borrar">🗑️</button>
                 </div>
                 <div class="history-list" id="historyList">
                     <div class="empty-state">
@@ -1163,7 +326,6 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR -->
     <div class="modal-overlay" id="editModal">
         <div class="modal">
             <h2>✏️ Editar Tornillo</h2>
@@ -1182,1064 +344,638 @@
         </div>
     </div>
 
-    <!-- TOAST -->
     <div class="toast" id="toast"></div>
+    <div class="footer">RIOS v2.0 • Sync via GitHub Gist</div>
+<script>
+// ========================
+// CONFIG
+// ========================
+const GIST_API = 'https://api.github.com/gists';
+const STORAGE_KEY = 'calcpesa_screws';
+const HISTORY_KEY = 'calcpesa_history';
+const SYNC_KEY = 'calcpesa_sync';
 
-    <div class="footer">
-        CalcPesa v2.0 • Sync via GitHub Gist
-    </div>
+let screws = [];
+let history = [];
+let editingIndex = -1;
+let syncConfig = null;
+let syncInterval = null;
+let selectedCalcScrew = null;
+let calcSuggestions = [];
+let calcSelectedIndex = -1;
 
-    <script>
-        // ========================
-        // CONFIGURACIÓN
-        // ========================
-        const GIST_API = 'https://api.github.com/gists';
-        const STORAGE_KEY = 'calcpesa_screws';
-        const HISTORY_KEY = 'calcpesa_history';
-        const SYNC_KEY = 'calcpesa_sync';
-
-        let screws = [];
-        let history = [];
-        let editingIndex = -1;
-        let syncConfig = null; // { code, gistId, token }
-        let syncInterval = null;
-
-        // ========================
-        // STORAGE LOCAL
-        // ========================
-        function loadData() {
-            try {
-                const s = localStorage.getItem(STORAGE_KEY);
-                if (s) screws = JSON.parse(s);
-                const h = localStorage.getItem(HISTORY_KEY);
-                if (h) history = JSON.parse(h);
-                const sync = localStorage.getItem(SYNC_KEY);
-                if (sync) {
-                    syncConfig = JSON.parse(sync);
-                    updateSyncUI();
-                    startAutoSync();
-                }
-            } catch(e) {
-                console.error('Error loading data', e);
-            }
-        }
-
-        function saveLocal() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(screws));
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-        }
-
-        function saveSyncConfig() {
-            if (syncConfig) {
-                localStorage.setItem(SYNC_KEY, JSON.stringify(syncConfig));
-            } else {
-                localStorage.removeItem(SYNC_KEY);
-            }
-        }
-
-        // ========================
-        // SYNC - GITHUB GIST
-        // ========================
-        function generateSyncCode() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 10; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
-        }
-
-        async function createNewSync() {
-            const code = generateSyncCode();
-            showToast('Creando sincronización...', 'info');
-
-            try {
-                // Crear gist anónimo
-                const response = await fetch(GIST_API, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        description: `CalcPesa sync - ${code}`,
-                        public: true,
-                        files: {
-                            'calcpesa-data.json': {
-                                content: JSON.stringify({
-                                    code: code,
-                                    screws: screws,
-                                    lastUpdate: new Date().toISOString(),
-                                    version: 2
-                                }, null, 2)
-                            }
-                        }
-                    })
-                });
-
-                if (!response.ok) throw new Error('Error creating gist');
-
-                const data = await response.json();
-                syncConfig = {
-                    code: code,
-                    gistId: data.id,
-                    createdAt: new Date().toISOString()
-                };
-
-                saveSyncConfig();
-                updateSyncUI();
-                startAutoSync();
-                showToast(`¡Sincronización creada! Código: ${code}`, 'success');
-
-            } catch (error) {
-                console.error(error);
-                showToast('Error al crear sincronización. Intentá de nuevo.', 'error');
-            }
-        }
-
-        async function joinSync() {
-            const code = document.getElementById('joinCode').value.trim().toUpperCase();
-            if (!code || code.length < 6) {
-                showToast('Ingresá un código válido (mínimo 6 caracteres)', 'error');
-                return;
-            }
-
-            showToast('Buscando sincronización...', 'info');
-
-            try {
-                // Buscar gist por descripción
-                const searchResponse = await fetch(`https://api.github.com/gists?per_page=100`);
-                if (!searchResponse.ok) throw new Error('Error searching');
-
-                const gists = await searchResponse.json();
-                const gist = gists.find(g => g.description && g.description.includes(`CalcPesa sync - ${code}`));
-
-                if (!gist) {
-                    showToast('Código no encontrado. Verificá que esté bien escrito.', 'error');
-                    return;
-                }
-
-                // Obtener contenido
-                const dataResponse = await fetch(gist.url);
-                if (!dataResponse.ok) throw new Error('Error fetching data');
-
-                const gistData = await dataResponse.json();
-                const fileContent = gistData.files['calcpesa-data.json']?.content;
-
-                if (!fileContent) {
-                    showToast('No se encontraron datos en la sincronización', 'error');
-                    return;
-                }
-
-                const remoteData = JSON.parse(fileContent);
-
-                // Merge datos: si hay tornillos locales, preguntar (o combinar)
-                if (screws.length > 0 && remoteData.screws && remoteData.screws.length > 0) {
-                    if (confirm(`Encontrados ${remoteData.screws.length} tornillos remotos. ¿Reemplazar tus ${screws.length} tornillos locales? (Cancelar = combinar)`)) {
-                        screws = remoteData.screws;
-                    } else {
-                        // Combinar: agregar los que no existan localmente
-                        remoteData.screws.forEach(rs => {
-                            if (!screws.some(ls => ls.name.toLowerCase() === rs.name.toLowerCase())) {
-                                screws.push(rs);
-                            }
-                        });
-                    }
-                } else if (remoteData.screws) {
-                    screws = remoteData.screws;
-                }
-
-                syncConfig = {
-                    code: code,
-                    gistId: gist.id,
-                    joinedAt: new Date().toISOString()
-                };
-
-                saveLocal();
-                saveSyncConfig();
-                updateSyncUI();
-                updateScrewSelect();
-                renderScrewList();
-                startAutoSync();
-                showToast(`¡Conectado! ${screws.length} tornillos sincronizados`, 'success');
-
-            } catch (error) {
-                console.error(error);
-                showToast('Error al conectar. Verificá tu conexión.', 'error');
-            }
-        }
-
-        async function pushToCloud() {
-            if (!syncConfig || !syncConfig.gistId) return;
-
-            try {
-                updateSyncStatus('syncing');
-
-                const response = await fetch(`${GIST_API}/${syncConfig.gistId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        files: {
-                            'calcpesa-data.json': {
-                                content: JSON.stringify({
-                                    code: syncConfig.code,
-                                    screws: screws,
-                                    lastUpdate: new Date().toISOString(),
-                                    version: 2
-                                }, null, 2)
-                            }
-                        }
-                    })
-                });
-
-                if (response.ok) {
-                    updateSyncStatus('online');
-                    return true;
-                } else {
-                    updateSyncStatus('offline');
-                    return false;
-                }
-            } catch (error) {
-                updateSyncStatus('offline');
-                return false;
-            }
-        }
-
-        async function pullFromCloud() {
-            if (!syncConfig || !syncConfig.gistId) return;
-
-            try {
-                const response = await fetch(`${GIST_API}/${syncConfig.gistId}`);
-                if (!response.ok) return;
-
-                const gistData = await response.json();
-                const fileContent = gistData.files['calcpesa-data.json']?.content;
-                if (!fileContent) return;
-
-                const remoteData = JSON.parse(fileContent);
-                if (remoteData.screws && remoteData.screws.length > 0) {
-                    // Merge inteligente: combinar sin duplicados
-                    remoteData.screws.forEach(rs => {
-                        const existing = screws.find(ls => ls.name.toLowerCase() === rs.name.toLowerCase());
-                        if (!existing) {
-                            screws.push(rs);
-                        } else if (rs.updated && existing.updated && new Date(rs.updated) > new Date(existing.updated)) {
-                            existing.weight100 = rs.weight100;
-                            existing.updated = rs.updated;
-                        }
-                    });
-
-                    saveLocal();
-                    updateScrewSelect();
-                    renderScrewList();
-                    updateSyncStatus('online');
-                }
-            } catch (error) {
-                updateSyncStatus('offline');
-            }
-        }
-
-        function startAutoSync() {
-            if (syncInterval) clearInterval(syncInterval);
-
-            // Sync cada 30 segundos
-            syncInterval = setInterval(async () => {
-                if (syncConfig && navigator.onLine) {
-                    await pullFromCloud();
-                }
-            }, 30000);
-
-            // Sync al volver online
-            window.addEventListener('online', () => {
-                if (syncConfig) {
-                    pullFromCloud();
-                    updateSyncStatus('online');
-                }
-            });
-
-            window.addEventListener('offline', () => {
-                updateSyncStatus('offline');
-            });
-        }
-
-        function disconnectSync() {
-            if (!confirm('¿Desconectar sincronización? Los tornillos locales se mantienen.')) return;
-
-            if (syncInterval) clearInterval(syncInterval);
-            syncConfig = null;
-            saveSyncConfig();
+// ========================
+// STORAGE
+// ========================
+function loadData() {
+    try {
+        const s = localStorage.getItem(STORAGE_KEY);
+        if (s) screws = JSON.parse(s);
+        const h = localStorage.getItem(HISTORY_KEY);
+        if (h) history = JSON.parse(h);
+        const sync = localStorage.getItem(SYNC_KEY);
+        if (sync) {
+            syncConfig = JSON.parse(sync);
             updateSyncUI();
-            updateSyncStatus('offline');
-            showToast('Sincronización desconectada');
-        }
-
-        function updateSyncUI() {
-            const hasCode = document.getElementById('syncHasCode');
-            const noCode = document.getElementById('syncNoCode');
-
-            if (syncConfig) {
-                hasCode.style.display = 'block';
-                noCode.style.display = 'none';
-                document.getElementById('syncCodeDisplay').textContent = syncConfig.code;
-            } else {
-                hasCode.style.display = 'none';
-                noCode.style.display = 'block';
-            }
-        }
-
-        function updateSyncStatus(status) {
-            const el = document.getElementById('syncStatus');
-            const icon = document.getElementById('syncIcon');
-            const text = document.getElementById('syncText');
-
-            el.className = 'sync-status ' + status;
-
-            switch(status) {
-                case 'online':
-                    icon.textContent = '🌐';
-                    text.textContent = 'Sync ON';
-                    break;
-                case 'offline':
-                    icon.textContent = '📴';
-                    text.textContent = syncConfig ? 'Sin red' : 'Sin sync';
-                    break;
-                case 'syncing':
-                    icon.innerHTML = '<span class="spinner"></span>';
-                    text.textContent = 'Sync...';
-                    break;
-            }
-        }
-
-        function copySyncCode() {
-            if (!syncConfig) return;
-            navigator.clipboard.writeText(syncConfig.code).then(() => {
-                showToast('Código copiado al portapapeles');
-            });
-        }
-
-        function shareViaWhatsApp() {
-            if (!syncConfig) return;
-            const url = window.location.href;
-            const text = `Unite a mi CalcPesa con el código: *${syncConfig.code}*\n\nO abrí la app: ${url}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function showSyncModal() {
-            showTab('sync');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab')[2].classList.add('active'); // Sync tab
-        }
-
-        // ========================
-        // EXPORT / IMPORT
-        // ========================
-        function exportData() {
-            const data = {
-                screws: screws,
-                history: history,
-                exportedAt: new Date().toISOString(),
-                version: 2
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `calcpesa-backup-${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('Backup descargado ✅');
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-
-                    if (data.screws) {
-                        if (screws.length > 0) {
-                            if (confirm(`¿Reemplazar tus ${screws.length} tornillos por los ${data.screws.length} del archivo?`)) {
-                                screws = data.screws;
-                            } else {
-                                data.screws.forEach(ds => {
-                                    if (!screws.some(s => s.name.toLowerCase() === ds.name.toLowerCase())) {
-                                        screws.push(ds);
-                                    }
-                                });
-                            }
-                        } else {
-                            screws = data.screws;
-                        }
-                    }
-
-                    if (data.history) {
-                        history = data.history;
-                    }
-
-                    saveLocal();
-                    updateScrewSelect();
-                    renderScrewList();
-                    showToast(`Importados ${screws.length} tornillos ✅`);
-
-                    // Si hay sync activo, subir a la nube
-                    if (syncConfig) {
-                        pushToCloud();
-                    }
-
-                } catch (err) {
-                    showToast('Error al importar. Verificá el archivo.', 'error');
-                }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
-
-        function shareApp() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('Link copiado al portapapeles');
-            });
-        }
-
-        // ========================
-        // TABS
-        // ========================
-        function showTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-
-            // Encontrar el tab correcto
-            const tabs = ['calc', 'screws', 'sync', 'history'];
-            const index = tabs.indexOf(tabName);
-            if (index >= 0) {
-                document.querySelectorAll('.tab')[index].classList.add('active');
-            }
-
-            document.getElementById('tab-' + tabName).classList.add('active');
-
-            if (tabName === 'screws') {
-                renderScrewList();
-                updateStats();
-            }
-            if (tabName === 'history') {
-                renderHistory();
-            }
-            if (tabName === 'calc') {
-                // Focus en el buscador al volver a calcular
-                setTimeout(() => {
-                    document.getElementById('calcSearchInput').focus();
-                }, 100);
-            }
-            if (tabName === 'sync') {
-                updateSyncUI();
-            }
-        }
-
-        // ========================
-        // CALCULATOR
-        // ========================
-        function onScrewSelect() {
-            const idx = document.getElementById('screwSelect').value;
-            if (idx !== '') {
-                const s = screws[parseInt(idx)];
-                document.getElementById('screwName').value = s.name;
-                document.getElementById('weight100').value = s.weight100;
-                document.getElementById('screwName').readOnly = true;
-                document.getElementById('weight100').readOnly = true;
-            } else {
-                document.getElementById('screwName').value = '';
-                document.getElementById('weight100').value = '';
-                document.getElementById('screwName').readOnly = false;
-                document.getElementById('weight100').readOnly = false;
-            }
-            calculate();
-        }
-
-        function setQuantity(qty) {
-            document.getElementById('quantity').value = qty;
-            calculate();
-        }
-
-        function calculate() {
-            const name = document.getElementById('screwName').value.trim();
-            const w100 = parseFloat(document.getElementById('weight100').value);
-            const qty = parseInt(document.getElementById('quantity').value);
-            const resultCard = document.getElementById('resultCard');
-            const saveOption = document.getElementById('saveOption');
-
-            if (!w100 || !qty || w100 <= 0 || qty <= 0) {
-                resultCard.classList.remove('show');
-                saveOption.style.display = 'none';
-                return;
-            }
-
-            const unitWeight = w100 / 100;
-            const totalWeight = unitWeight * qty;
-
-            let displayValue, displayUnit;
-            if (totalWeight >= 1000) {
-                displayValue = (totalWeight / 1000).toFixed(3);
-                displayUnit = 'kilogramos';
-            } else {
-                displayValue = totalWeight.toFixed(2);
-                displayUnit = 'gramos';
-            }
-
-            document.getElementById('resultValue').textContent = displayValue;
-            document.getElementById('resultUnit').textContent = displayUnit;
-            document.getElementById('resultDetail').textContent = 
-                `${qty} unidades × ${unitWeight.toFixed(3)}g c/u = ${totalWeight.toFixed(2)}g total`;
-
-            resultCard.classList.add('show');
-
-            const exists = screws.some(s => s.name.toLowerCase() === name.toLowerCase());
-            saveOption.style.display = (name && !exists) ? 'block' : 'none';
-
-            addToHistory(name, qty, totalWeight);
-        }
-
-        function addToHistory(name, qty, weight) {
-            if (!name) return;
-            const entry = {
-                name: name,
-                qty: qty,
-                weight: weight,
-                time: new Date().toISOString()
-            };
-            history.unshift(entry);
-            if (history.length > 50) history = history.slice(0, 50);
-            saveLocal();
-        }
-
-        async function saveAndCalculate() {
-            const name = document.getElementById('screwName').value.trim();
-            const w100 = parseFloat(document.getElementById('weight100').value);
-
-            if (!name || !w100) {
-                showToast('Completá todos los campos', 'error');
-                return;
-            }
-
-            screws.push({ 
-                name: name, 
-                weight100: w100, 
-                created: new Date().toISOString(),
-                updated: new Date().toISOString()
-            });
-
-            saveLocal();
-            updateScrewSelect();
-            document.getElementById('saveOption').style.display = 'none';
-            showToast('Tornillo guardado ✅');
-
-            // Sync a la nube si hay configuración
-            if (syncConfig) {
-                await pushToCloud();
-            }
-        }
-
-        // ========================
-        // SCREW LIST
-        // ========================
-        function updateScrewSelect() {
-            // Ya no se usa select nativo, ahora es input predictivo
-            // Esta función se mantiene por compatibilidad pero no hace nada
-        }
-
-        // ========================
-        // BÚSQUEDA PREDICTIVA
-        // ========================
-        let selectedSuggestionIndex = -1;
-        let currentSuggestions = [];
-
-        function onSearchInput() {
-            const input = document.getElementById('searchScrews');
-            const query = input.value.trim();
-            const clearBtn = document.getElementById('clearSearchBtn');
-
-            clearBtn.style.display = query ? 'block' : 'none';
-
-            if (query.length === 0) {
-                hideSuggestions();
-                renderScrewList();
-                return;
-            }
-
-            // Generar sugerencias predictivas
-            const queryLower = query.toLowerCase();
-            currentSuggestions = screws.map((s, idx) => ({ screw: s, index: idx }))
-                .filter(item => {
-                    const name = item.screw.name.toLowerCase();
-                    // Buscar coincidencias en cualquier parte del nombre
-                    return name.includes(queryLower) || 
-                           // También buscar por palabras individuales
-                           queryLower.split(/\s+/).every(word => name.includes(word));
-                })
-                .sort((a, b) => {
-                    const nameA = a.screw.name.toLowerCase();
-                    const nameB = b.screw.name.toLowerCase();
-                    const q = queryLower;
-
-                    // Prioridad 1: Empieza exactamente con la query
-                    if (nameA.startsWith(q) && !nameB.startsWith(q)) return -1;
-                    if (nameB.startsWith(q) && !nameA.startsWith(q)) return 1;
-
-                    // Prioridad 2: Empieza con alguna palabra de la query
-                    const wordsA = nameA.split(/\s+/);
-                    const wordsB = nameB.split(/\s+/);
-                    const startsWithA = wordsA.some(w => w.startsWith(q));
-                    const startsWithB = wordsB.some(w => w.startsWith(q));
-                    if (startsWithA && !startsWithB) return -1;
-                    if (startsWithB && !startsWithA) return 1;
-
-                    // Prioridad 3: Más corto primero (más relevante)
-                    return nameA.length - nameB.length;
-                })
-                .slice(0, 8); // Máximo 8 sugerencias
-
-            selectedSuggestionIndex = -1;
-            renderSuggestions(queryLower);
-            renderScrewListFiltered(currentSuggestions);
-        }
-
-        function renderSuggestions(query) {
-            const dropdown = document.getElementById('searchSuggestions');
-
-            if (currentSuggestions.length === 0) {
-                dropdown.innerHTML = '<div class="no-suggestions">No se encontraron tornillos</div>';
-                dropdown.style.display = 'block';
-                return;
-            }
-
-            dropdown.innerHTML = currentSuggestions.map((item, i) => {
-                const name = item.screw.name;
-                const highlightedName = highlightText(name, query);
-
-                return `
-                    <div class="suggestion-item" data-index="${i}" onclick="selectSuggestion(${i})" onmouseenter="hoverSuggestion(${i})">
-                        <div>
-                            <div class="suggestion-text">${highlightedName}</div>
-                        </div>
-                        <div class="suggestion-meta">${item.screw.weight100}g/100u</div>
-                    </div>
-                `;
-            }).join('');
-
-            dropdown.style.display = 'block';
-        }
-
-        function highlightText(text, query) {
-            if (!query) return escapeHtml(text);
-
-            const words = query.split(/\s+/).filter(w => w.length > 0);
-            let result = escapeHtml(text);
-
-            // Ordenar palabras por longitud descendente para no reemplazar parcialmente
-            words.sort((a, b) => b.length - a.length);
-
-            words.forEach(word => {
-                const regex = new RegExp(`(${escapeRegex(word)})`, 'gi');
-                result = result.replace(regex, '<span class="suggestion-highlight">$1</span>');
-            });
-
-            return result;
-        }
-
-        function escapeRegex(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
-
-        function selectSuggestion(index) {
-            if (index < 0 || index >= currentSuggestions.length) return;
-
-            const item = currentSuggestions[index];
-            document.getElementById('searchScrews').value = item.screw.name;
-            hideSuggestions();
-            renderScrewListFiltered([item]);
-            document.getElementById('clearSearchBtn').style.display = 'block';
-        }
-
-        function hoverSuggestion(index) {
-            selectedSuggestionIndex = index;
-            updateSuggestionSelection();
-        }
-
-        function onSearchKeydown(e) {
-            if (currentSuggestions.length === 0) return;
-
-            switch(e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, currentSuggestions.length - 1);
-                    updateSuggestionSelection();
-                    scrollToSuggestion();
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
-                    updateSuggestionSelection();
-                    scrollToSuggestion();
-                    break;
-                case 'Enter':
-                    e.preventDefault();
-                    if (selectedSuggestionIndex >= 0) {
-                        selectSuggestion(selectedSuggestionIndex);
-                    } else if (currentSuggestions.length > 0) {
-                        // Si no hay selección, usar la primera
-                        selectSuggestion(0);
-                    }
-                    break;
-                case 'Escape':
-                    hideSuggestions();
-                    break;
-            }
-        }
-
-        function updateSuggestionSelection() {
-            const items = document.querySelectorAll('.suggestion-item');
-            items.forEach((item, i) => {
-                if (i === selectedSuggestionIndex) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
-        }
-
-        function scrollToSuggestion() {
-            const dropdown = document.getElementById('searchSuggestions');
-            const selected = dropdown.querySelector('.suggestion-item.selected');
-            if (selected) {
-                selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            }
-        }
-
-        function hideSuggestions() {
-            document.getElementById('searchSuggestions').style.display = 'none';
-            selectedSuggestionIndex = -1;
-        }
-
-        function onSearchFocus() {
-            const query = document.getElementById('searchScrews').value.trim();
-            if (query.length > 0) {
-                onSearchInput();
-            }
-        }
-
-        function onSearchBlur() {
-            // Delay para permitir clicks en sugerencias
-            setTimeout(() => {
-                hideSuggestions();
-            }, 200);
-        }
-
-        function clearSearch() {
-            document.getElementById('searchScrews').value = '';
-            document.getElementById('clearSearchBtn').style.display = 'none';
-            hideSuggestions();
-            renderScrewList();
-        }
-
-        function renderScrewListFiltered(suggestions) {
-            const list = document.getElementById('screwList');
-
-            document.getElementById('screwCountBadge').textContent = screws.length;
-            document.getElementById('totalScrews').textContent = screws.length;
-
-            if (suggestions.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🔩</div>
-                        <h3>No se encontraron resultados</h3>
-                        <p>Probá con otra búsqueda o agregá un nuevo tornillo</p>
-                    </div>
-                `;
-                return;
-            }
-
-            list.innerHTML = suggestions.map(item => {
-                const s = item.screw;
-                const originalIndex = item.index;
-                return `
-                    <div class="screw-item">
-                        <div class="screw-info">
-                            <h3>${escapeHtml(s.name)}</h3>
-                            <p>💾 ${s.weight100}g cada 100u • ${(s.weight100/100).toFixed(3)}g c/u</p>
-                        </div>
-                        <div class="screw-actions">
-                            <button class="btn-icon use" onclick="useScrew(${originalIndex})" title="Usar">⚖️</button>
-                            < <button class="btn-icon edit" onclick="openEdit(${originalIndex})" title="Editar">✏️</button>
-                            <button class="btn-icon delete" onclick="deleteScrew(${originalIndex})" title="Eliminar">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderScrewList() {
-            const search = document.getElementById('searchScrews').value.toLowerCase().trim();
-
-            document.getElementById('screwCountBadge').textContent = screws.length;
-            document.getElementById('totalScrews').textContent = screws.length;
-
-            if (search.length > 0) {
-                // Si hay texto en el buscador, usar el filtrado predictivo
-                onSearchInput();
-                return;
-            }
-
-            const list = document.getElementById('screwList');
-
-            if (screws.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🔩</div>
-                        <h3>No hay tornillos guardados</h3>
-                        <p>Agregá tu primer tornillo para empezar</p>
-                    </div>
-                `;
-                return;
-            }
-
-            list.innerHTML = screws.map((s, i) => {
-                return `
-                    <div class="screw-item">
-                        <div class="screw-info">
-                            <h3>${escapeHtml(s.name)}</h3>
-                            <p>💾 ${s.weight100}g cada 100u • ${(s.weight100/100).toFixed(3)}g c/u</p>
-                        </div>
-                        <div class="screw-actions">
-                            <button class="btn-icon use" onclick="useScrew(${i})" title="Usar">⚖️</button>
-                            <button class="btn-icon edit" onclick="openEdit(${i})" title="Editar">✏️</button>
-                            <button class="btn-icon delete" onclick="deleteScrew(${i})" title="Eliminar">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function useScrew(index) {
-            const s = screws[index];
-            selectedCalcScrew = { screw: s, index: index };
-
-            // Cambiar a tab calcular
-            showTab('calc');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab')[0].classList.add('active');
-
-            // Setear valores
-            document.getElementById('calcSearchInput').value = s.name;
-            document.getElementById('selectedScrewName').textContent = s.name;
-            document.getElementById('selectedScrewWeight').textContent = `${s.weight100}g cada 100 unidades`;
-            document.getElementById('selectedScrewInfo').style.display = 'block';
-            document.getElementById('newScrewForm').style.display = 'none';
-            document.getElementById('calcClearSearch').style.display = 'block';
-
-            activateStep2();
-            document.getElementById('quantity').focus();
-            showToast(`✅ ${s.name} listo para calcular`);
-        }
-
-        async function addScrew() {
-            const name = document.getElementById('newScrewName').value.trim();
-            const weight = parseFloat(document.getElementById('newScrewWeight').value);
-
-            if (!name || !weight || weight <= 0) {
-                showToast('Completá todos los campos correctamente', 'error');
-                return;
-            }
-
-            screws.push({ 
-                name: name, 
-                weight100: weight, 
-                created: new Date().toISOString(),
-                updated: new Date().toISOString()
-            });
-
-            saveLocal();
-
-            document.getElementById('newScrewName').value = '';
-            document.getElementById('newScrewWeight').value = '';
-
-            renderScrewList();
-            updateScrewSelect();
-            updateStats();
-            showToast('Tornillo agregado ✅');
-
-            // Sync a la nube
-            if (syncConfig) {
-                await pushToCloud();
-            }
-        }
-
-        function openEdit(index) {
-            editingIndex = index;
-            const s = screws[index];
-            document.getElementById('editName').value = s.name;
-            document.getElementById('editWeight').value = s.weight100;
-            document.getElementById('editModal').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('editModal').classList.remove('show');
-            editingIndex = -1;
-        }
-
-        async function saveEdit() {
-            if (editingIndex < 0) return;
-            const name = document.getElementById('editName').value.trim();
-            const weight = parseFloat(document.getElementById('editWeight').value);
-
-            if (!name || !weight || weight <= 0) {
-                showToast('Datos inválidos', 'error');
-                return;
-            }
-
-            screws[editingIndex].name = name;
-            screws[editingIndex].weight100 = weight;
-            screws[editingIndex].updated = new Date().toISOString();
-
-            saveLocal();
-            renderScrewList();
-            updateScrewSelect();
-            closeModal();
-            showToast('Tornillo actualizado ✅');
-
-            if (syncConfig) {
-                await pushToCloud();
-            }
-        }
-
-        async function deleteScrew(index) {
-            if (!confirm(`¿Eliminar "${screws[index].name}"?`)) return;
-            screws.splice(index, 1);
-            saveLocal();
-            renderScrewList();
-            updateScrewSelect();
-            updateStats();
-            showToast('Tornillo eliminado');
-
-            if (syncConfig) {
-                await pushToCloud();
-            }
-        }
-
-        // ========================
-        // HISTORY
-        // ========================
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-
-            if (history.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📋</div>
-                        <h3>Sin historial</h3>
-                        <p>Los cálculos aparecerán aquí</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const today = new Date().toDateString();
-            const todayCount = history.filter(h => new Date(h.time).toDateString() === today).length;
-            document.getElementById('totalCalcs').textContent = todayCount;
-
-            list.innerHTML = history.map(h => {
-                const d = new Date(h.time);
-                const timeStr = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-                const dateStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
-
-                let wStr;
-                if (h.weight >= 1000) {
-                    wStr = (h.weight / 1000).toFixed(3) + ' kg';
-                } else {
-                    wStr = h.weight.toFixed(2) + ' g';
-                }
-
-                return `
-                    <div class="history-item">
-                        <div>
-                            <div style="font-weight: 600;">${escapeHtml(h.name)}</div>
-                            <div style="color: var(--text-light); font-size: 0.8rem;">${h.qty} unidades → ${wStr}</div>
-                        </div>
-                        <div class="time">${dateStr}<br>${timeStr}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function clearHistory() {
-            if (!confirm('¿Borrar todo el historial?')) return;
-            history = [];
-            saveLocal();
-            renderHistory();
-            showToast('Historial borrado');
-        }
-
-        // ========================
-        // STATS
-        // ========================
-        function updateStats() {
-            document.getElementById('totalScrews').textContent = screws.length;
-            const today = new Date().toDateString();
-            const todayCount = history.filter(h => new Date(h.time).toDateString() === today).length;
-            document.getElementById('totalCalcs').textContent = todayCount;
-        }
-
-        // ========================
-        // UTILS
-        // ========================
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast show ' + type;
-            setTimeout(() => toast.classList.remove('show'), 2500);
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        // ========================
-        // INIT
-        // ========================
-        loadData();
-        updateStats();
-        updateSyncUI();
-        deactivateStep2(); // Iniciar con paso 2 desactivado
-
-        if (syncConfig) {
             startAutoSync();
-            pullFromCloud();
         }
+    } catch(e) { console.error(e); }
+}
 
-        // Verificar estado de red inicial
-        if (navigator.onLine && syncConfig) {
+function saveLocal() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(screws));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function saveSyncConfig() {
+    if (syncConfig) localStorage.setItem(SYNC_KEY, JSON.stringify(syncConfig));
+    else localStorage.removeItem(SYNC_KEY);
+}
+
+// ========================
+// TABS
+// ========================
+function showTab(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const tabs = ['calc', 'screws', 'sync', 'history'];
+    const idx = tabs.indexOf(tabName);
+    if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+
+    if (tabName === 'screws') { renderScrewList(); updateStats(); }
+    if (tabName === 'history') renderHistory();
+    if (tabName === 'calc') setTimeout(() => document.getElementById('calcSearchInput').focus(), 100);
+    if (tabName === 'sync') updateSyncUI();
+}
+
+// ========================
+// CALCULADORA - BÚSQUEDA PREDICTIVA
+// ========================
+function onCalcSearchInput() {
+    const input = document.getElementById('calcSearchInput');
+    const query = input.value.trim();
+    document.getElementById('calcClearSearch').style.display = query ? 'block' : 'none';
+
+    if (query.length === 0) { hideCalcSuggestions(); return; }
+
+    const q = query.toLowerCase();
+    calcSuggestions = screws.map((s, i) => ({ screw: s, index: i }))
+        .filter(item => item.screw.name.toLowerCase().includes(q))
+        .sort((a, b) => {
+            const na = a.screw.name.toLowerCase(), nb = b.screw.name.toLowerCase();
+            if (na.startsWith(q) && !nb.startsWith(q)) return -1;
+            if (nb.startsWith(q) && !na.startsWith(q)) return 1;
+            return na.length - nb.length;
+        })
+        .slice(0, 6);
+
+    calcSelectedIndex = -1;
+    renderCalcSuggestions(q);
+}
+
+function renderCalcSuggestions(query) {
+    const dd = document.getElementById('calcSuggestions');
+    if (calcSuggestions.length === 0) {
+        const cur = document.getElementById('calcSearchInput').value;
+        dd.innerHTML = '<div class="no-suggestions"><div style="margin-bottom:8px">🔩 No encontrado</div><div style="font-size:0.8rem">Escribí el nombre completo para agregarlo</div></div><div class="no-suggestions-btn" onclick="showNewScrewForm()">➕ Agregar "' + escapeHtml(cur) + '"</div>';
+        dd.style.display = 'block';
+        return;
+    }
+    dd.innerHTML = calcSuggestions.map((item, i) => {
+        return '<div class="suggestion-item" data-index="' + i + '" onclick="selectCalcSuggestion(' + i + ')" onmouseenter="hoverCalcSuggestion(' + i + ')"><div><div class="suggestion-text">' + highlightText(item.screw.name, query) + '</div></div><div class="suggestion-meta">' + item.screw.weight100 + 'g/100u</div></div>';
+    }).join('');
+    dd.style.display = 'block';
+}
+
+function selectCalcSuggestion(index) {
+    if (index < 0 || index >= calcSuggestions.length) return;
+    selectedCalcScrew = calcSuggestions[index];
+    const s = selectedCalcScrew.screw;
+    document.getElementById('calcSearchInput').value = s.name;
+    hideCalcSuggestions();
+    document.getElementById('selectedScrewName').textContent = s.name;
+    document.getElementById('selectedScrewWeight').textContent = s.weight100 + 'g cada 100 unidades';
+    document.getElementById('selectedScrewInfo').style.display = 'flex';
+    document.getElementById('newScrewForm').style.display = 'none';
+    activateStep2();
+    showToast('✅ ' + s.name + ' seleccionado');
+}
+
+function hoverCalcSuggestion(index) {
+    calcSelectedIndex = index;
+    updateCalcSuggestionSelection();
+}
+
+function onCalcSearchKeydown(e) {
+    if (calcSuggestions.length === 0 && e.key === 'Enter') { showNewScrewForm(); return; }
+    switch(e.key) {
+        case 'ArrowDown': e.preventDefault(); calcSelectedIndex = Math.min(calcSelectedIndex + 1, calcSuggestions.length - 1); updateCalcSuggestionSelection(); scrollToCalcSuggestion(); break;
+        case 'ArrowUp': e.preventDefault(); calcSelectedIndex = Math.max(calcSelectedIndex - 1, -1); updateCalcSuggestionSelection(); scrollToCalcSuggestion(); break;
+        case 'Enter': e.preventDefault(); if (calcSelectedIndex >= 0) selectCalcSuggestion(calcSelectedIndex); else if (calcSuggestions.length > 0) selectCalcSuggestion(0); break;
+        case 'Escape': hideCalcSuggestions(); break;
+    }
+}
+
+function updateCalcSuggestionSelection() {
+    document.querySelectorAll('#calcSuggestions .suggestion-item').forEach((item, i) => {
+        item.classList.toggle('selected', i === calcSelectedIndex);
+    });
+}
+
+function scrollToCalcSuggestion() {
+    const selected = document.querySelector('#calcSuggestions .suggestion-item.selected');
+    if (selected) selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function hideCalcSuggestions() {
+    document.getElementById('calcSuggestions').style.display = 'none';
+    calcSelectedIndex = -1;
+}
+
+function onCalcSearchFocus() {
+    const q = document.getElementById('calcSearchInput').value.trim();
+    if (q.length > 0 && !selectedCalcScrew) onCalcSearchInput();
+}
+
+function onCalcSearchBlur() {
+    setTimeout(() => hideCalcSuggestions(), 200);
+}
+
+function clearCalcSearch() {
+    document.getElementById('calcSearchInput').value = '';
+    document.getElementById('calcClearSearch').style.display = 'none';
+    hideCalcSuggestions();
+    clearSelectedScrew();
+}
+
+function clearSelectedScrew() {
+    selectedCalcScrew = null;
+    document.getElementById('selectedScrewInfo').style.display = 'none';
+    document.getElementById('newScrewForm').style.display = 'none';
+    document.getElementById('calcSearchInput').value = '';
+    document.getElementById('calcClearSearch').style.display = 'none';
+    deactivateStep2();
+}
+
+function showNewScrewForm() {
+    const q = document.getElementById('calcSearchInput').value.trim();
+    document.getElementById('newCalcScrewName').value = q;
+    document.getElementById('newScrewForm').style.display = 'block';
+    document.getElementById('selectedScrewInfo').style.display = 'none';
+    hideCalcSuggestions();
+    setTimeout(() => document.getElementById('newCalcWeight100').focus(), 100);
+}
+
+async function saveNewScrewFromCalc() {
+    const name = document.getElementById('newCalcScrewName').value.trim();
+    const weight = parseFloat(document.getElementById('newCalcWeight100').value);
+    if (!name || !weight || weight <= 0) { showToast('Completá nombre y peso', 'error'); return; }
+
+    const existing = screws.findIndex(s => s.name.toLowerCase() === name.toLowerCase());
+    if (existing >= 0) {
+        showToast('Ese tornillo ya existe', 'warning');
+        selectedCalcScrew = { screw: screws[existing], index: existing };
+    } else {
+        const newScrew = { name: name, weight100: weight, created: new Date().toISOString(), updated: new Date().toISOString() };
+        screws.push(newScrew);
+        saveLocal();
+        selectedCalcScrew = { screw: newScrew, index: screws.length - 1 };
+        if (syncConfig) await pushToCloud();
+        showToast('Tornillo guardado ✅');
+    }
+
+    document.getElementById('selectedScrewName').textContent = selectedCalcScrew.screw.name;
+    document.getElementById('selectedScrewWeight').textContent = selectedCalcScrew.screw.weight100 + 'g cada 100 unidades';
+    document.getElementById('selectedScrewInfo').style.display = 'flex';
+    document.getElementById('newScrewForm').style.display = 'none';
+    document.getElementById('calcSearchInput').value = selectedCalcScrew.screw.name;
+    activateStep2();
+    updateStats();
+}
+
+function activateStep2() {
+    document.getElementById('step2Card').classList.add('active');
+    document.getElementById('quantity').disabled = false;
+    document.querySelectorAll('.quick-btn').forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
+}
+
+function deactivateStep2() {
+    document.getElementById('step2Card').classList.remove('active');
+    document.getElementById('quantity').value = '';
+    document.getElementById('quantity').disabled = true;
+    document.querySelectorAll('.quick-btn').forEach(btn => { btn.disabled = true; btn.style.opacity = '0.3'; });
+    document.getElementById('resultCard').classList.remove('show');
+}
+
+function setQuantity(qty) {
+    document.getElementById('quantity').value = qty;
+    calculate();
+}
+
+function calculate() {
+    if (!selectedCalcScrew) return;
+    const w100 = selectedCalcScrew.screw.weight100;
+    const qty = parseInt(document.getElementById('quantity').value);
+    const rc = document.getElementById('resultCard');
+    if (!w100 || !qty || w100 <= 0 || qty <= 0) { rc.classList.remove('show'); return; }
+    const unitWeight = w100 / 100;
+    const totalWeight = unitWeight * qty;
+    let displayValue, displayUnit;
+    if (totalWeight >= 1000) { displayValue = (totalWeight / 1000).toFixed(3); displayUnit = 'kilogramos'; }
+    else { displayValue = totalWeight.toFixed(2); displayUnit = 'gramos'; }
+    document.getElementById('resultValue').textContent = displayValue;
+    document.getElementById('resultUnit').textContent = displayUnit;
+    document.getElementById('resultDetail').textContent = qty + ' unidades × ' + unitWeight.toFixed(3) + 'g c/u = ' + totalWeight.toFixed(2) + 'g total';
+    rc.classList.add('show');
+    addToHistory(selectedCalcScrew.screw.name, qty, totalWeight);
+}
+
+function addToHistory(name, qty, weight) {
+    if (!name) return;
+    history.unshift({ name: name, qty: qty, weight: weight, time: new Date().toISOString() });
+    if (history.length > 50) history = history.slice(0, 50);
+    saveLocal();
+}
+
+// ========================
+// SCREW LIST
+// ========================
+function renderScrewList() {
+    const list = document.getElementById('screwList');
+    const search = document.getElementById('searchScrews').value.toLowerCase().trim();
+    const filtered = search ? screws.filter(s => s.name.toLowerCase().includes(search)) : screws;
+    document.getElementById('screwCountBadge').textContent = screws.length;
+    document.getElementById('totalScrews').textContent = screws.length;
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon">🔩</div><h3>' + (screws.length === 0 ? 'No hay tornillos guardados' : 'No se encontraron resultados') + '</h3><p>' + (screws.length === 0 ? 'Agregá tu primer tornillo para empezar' : 'Probá con otra búsqueda') + '</p></div>';
+        return;
+    }
+    list.innerHTML = filtered.map((s, i) => {
+        const originalIndex = screws.indexOf(s);
+        return '<div class="screw-item"><div class="screw-info"><h3>' + escapeHtml(s.name) + '</h3><p>' + s.weight100 + 'g cada 100u • ' + (s.weight100/100).toFixed(3) + 'g c/u</p></div><div class="screw-actions"><button class="btn-icon use" onclick="useScrew(' + originalIndex + ')" title="Usar">⚖️</button><button class="btn-icon edit" onclick="openEdit(' + originalIndex + ')" title="Editar">✏️</button><button class="btn-icon delete" onclick="deleteScrew(' + originalIndex + ')" title="Eliminar">🗑️</button></div></div>';
+    }).join('');
+}
+
+function useScrew(index) {
+    const s = screws[index];
+    selectedCalcScrew = { screw: s, index: index };
+    showTab('calc');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('calcSearchInput').value = s.name;
+    document.getElementById('selectedScrewName').textContent = s.name;
+    document.getElementById('selectedScrewWeight').textContent = s.weight100 + 'g cada 100 unidades';
+    document.getElementById('selectedScrewInfo').style.display = 'flex';
+    document.getElementById('newScrewForm').style.display = 'none';
+    document.getElementById('calcClearSearch').style.display = 'block';
+    activateStep2();
+    showToast('✅ ' + s.name + ' listo');
+}
+
+async function addScrew() {
+    const name = document.getElementById('newScrewName').value.trim();
+    const weight = parseFloat(document.getElementById('newScrewWeight').value);
+    if (!name || !weight || weight <= 0) { showToast('Completá todos los campos', 'error'); return; }
+    screws.push({ name: name, weight100: weight, created: new Date().toISOString(), updated: new Date().toISOString() });
+    saveLocal();
+    document.getElementById('newScrewName').value = '';
+    document.getElementById('newScrewWeight').value = '';
+    renderScrewList();
+    updateStats();
+    showToast('Tornillo agregado ✅');
+    if (syncConfig) await pushToCloud();
+}
+
+function openEdit(index) {
+    editingIndex = index;
+    const s = screws[index];
+    document.getElementById('editName').value = s.name;
+    document.getElementById('editWeight').value = s.weight100;
+    document.getElementById('editModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('editModal').classList.remove('show');
+    editingIndex = -1;
+}
+
+async function saveEdit() {
+    if (editingIndex < 0) return;
+    const name = document.getElementById('editName').value.trim();
+    const weight = parseFloat(document.getElementById('editWeight').value);
+    if (!name || !weight || weight <= 0) { showToast('Datos inválidos', 'error'); return; }
+    screws[editingIndex].name = name;
+    screws[editingIndex].weight100 = weight;
+    screws[editingIndex].updated = new Date().toISOString();
+    saveLocal();
+    renderScrewList();
+    closeModal();
+    showToast('Tornillo actualizado ✅');
+    if (syncConfig) await pushToCloud();
+}
+
+async function deleteScrew(index) {
+    if (!confirm('¿Eliminar "' + screws[index].name + '"?')) return;
+    screws.splice(index, 1);
+    saveLocal();
+    renderScrewList();
+    updateStats();
+    showToast('Tornillo eliminado');
+    if (syncConfig) await pushToCloud();
+}
+
+// ========================
+// HISTORY
+// ========================
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (history.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>Sin historial</h3><p>Los cálculos aparecerán aquí</p></div>';
+        return;
+    }
+    const today = new Date().toDateString();
+    document.getElementById('totalCalcs').textContent = history.filter(h => new Date(h.time).toDateString() === today).length;
+    list.innerHTML = history.map(h => {
+        const d = new Date(h.time);
+        const timeStr = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+        let wStr = h.weight >= 1000 ? (h.weight / 1000).toFixed(3) + ' kg' : h.weight.toFixed(2) + ' g';
+        return '<div class="history-item"><div><div style="font-weight:600">' + escapeHtml(h.name) + '</div><div style="color:var(--text-light);font-size:0.8rem">' + h.qty + ' unidades → ' + wStr + '</div></div><div class="time">' + dateStr + '<br>' + timeStr + '</div></div>';
+    }).join('');
+}
+
+function clearHistory() {
+    if (!confirm('¿Borrar todo el historial?')) return;
+    history = [];
+    saveLocal();
+    renderHistory();
+    showToast('Historial borrado');
+}
+
+// ========================
+// STATS
+// ========================
+function updateStats() {
+    document.getElementById('totalScrews').textContent = screws.length;
+    const today = new Date().toDateString();
+    document.getElementById('totalCalcs').textContent = history.filter(h => new Date(h.time).toDateString() === today).length;
+}
+
+// ========================
+// SYNC
+// ========================
+function generateSyncCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 10; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    return code;
+}
+
+async function createNewSync() {
+    const code = generateSyncCode();
+    showToast('Creando sincronización...', 'info');
+    try {
+        const response = await fetch(GIST_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+            body: JSON.stringify({
+                description: 'CalcPesa sync - ' + code,
+                public: true,
+                files: { 'calcpesa-data.json': { content: JSON.stringify({ code: code, screws: screws, lastUpdate: new Date().toISOString(), version: 2 }) } }
+            })
+        });
+        if (!response.ok) throw new Error('Error');
+        const data = await response.json();
+        syncConfig = { code: code, gistId: data.id, createdAt: new Date().toISOString() };
+        saveSyncConfig();
+        updateSyncUI();
+        startAutoSync();
+        showToast('¡Sincronización creada! Código: ' + code, 'success');
+    } catch (error) { showToast('Error al crear sincronización', 'error'); }
+}
+
+async function joinSync() {
+    const code = document.getElementById('joinCode').value.trim().toUpperCase();
+    if (!code || code.length < 6) { showToast('Ingresá un código válido', 'error'); return; }
+    showToast('Buscando sincronización...', 'info');
+    try {
+        const searchResponse = await fetch('https://api.github.com/gists?per_page=100');
+        if (!searchResponse.ok) throw new Error('Error');
+        const gists = await searchResponse.json();
+        const gist = gists.find(g => g.description && g.description.includes('CalcPesa sync - ' + code));
+        if (!gist) { showToast('Código no encontrado', 'error'); return; }
+        const dataResponse = await fetch(gist.url);
+        if (!dataResponse.ok) throw new Error('Error');
+        const gistData = await dataResponse.json();
+        const fileContent = gistData.files['calcpesa-data.json']?.content;
+        if (!fileContent) { showToast('No se encontraron datos', 'error'); return; }
+        const remoteData = JSON.parse(fileContent);
+        if (remoteData.screws) {
+            if (screws.length > 0 && remoteData.screws.length > 0) {
+                if (confirm('¿Reemplazar tus ' + screws.length + ' tornillos por los ' + remoteData.screws.length + ' remotos?')) screws = remoteData.screws;
+                else remoteData.screws.forEach(rs => { if (!screws.some(ls => ls.name.toLowerCase() === rs.name.toLowerCase())) screws.push(rs); });
+            } else if (remoteData.screws) screws = remoteData.screws;
+        }
+        syncConfig = { code: code, gistId: gist.id, joinedAt: new Date().toISOString() };
+        saveLocal();
+        saveSyncConfig();
+        updateSyncUI();
+        renderScrewList();
+        startAutoSync();
+        showToast('¡Conectado! ' + screws.length + ' tornillos sincronizados', 'success');
+    } catch (error) { showToast('Error al conectar', 'error'); }
+}
+
+async function pushToCloud() {
+    if (!syncConfig || !syncConfig.gistId) return;
+    try {
+        updateSyncStatus('syncing');
+        const response = await fetch(GIST_API + '/' + syncConfig.gistId, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+            body: JSON.stringify({ files: { 'calcpesa-data.json': { content: JSON.stringify({ code: syncConfig.code, screws: screws, lastUpdate: new Date().toISOString(), version: 2 }) } } })
+        });
+        if (response.ok) updateSyncStatus('online');
+        else updateSyncStatus('offline');
+    } catch (error) { updateSyncStatus('offline'); }
+}
+
+async function pullFromCloud() {
+    if (!syncConfig || !syncConfig.gistId) return;
+    try {
+        const response = await fetch(GIST_API + '/' + syncConfig.gistId);
+        if (!response.ok) return;
+        const gistData = await response.json();
+        const fileContent = gistData.files['calcpesa-data.json']?.content;
+        if (!fileContent) return;
+        const remoteData = JSON.parse(fileContent);
+        if (remoteData.screws) {
+            remoteData.screws.forEach(rs => {
+                const existing = screws.find(ls => ls.name.toLowerCase() === rs.name.toLowerCase());
+                if (!existing) screws.push(rs);
+                else if (rs.updated && existing.updated && new Date(rs.updated) > new Date(existing.updated)) { existing.weight100 = rs.weight100; existing.updated = rs.updated; }
+            });
+            saveLocal();
+            renderScrewList();
             updateSyncStatus('online');
-        } else if (!navigator.onLine && syncConfig) {
-            updateSyncStatus('offline');
-        } else {
-            updateSyncStatus('offline');
         }
+    } catch (error) { updateSyncStatus('offline'); }
+}
 
-        // Focus inicial en el buscador
-        setTimeout(() => {
-            document.getElementById('calcSearchInput').focus();
-        }, 300);
-    </script>
+function startAutoSync() {
+    if (syncInterval) clearInterval(syncInterval);
+    syncInterval = setInterval(async () => { if (syncConfig && navigator.onLine) await pullFromCloud(); }, 30000);
+    window.addEventListener('online', () => { if (syncConfig) { pullFromCloud(); updateSyncStatus('online'); } });
+    window.addEventListener('offline', () => { updateSyncStatus('offline'); });
+}
+
+function disconnectSync() {
+    if (!confirm('¿Desconectar sincronización?')) return;
+    if (syncInterval) clearInterval(syncInterval);
+    syncConfig = null;
+    saveSyncConfig();
+    updateSyncUI();
+    updateSyncStatus('offline');
+    showToast('Sincronización desconectada');
+}
+
+function updateSyncUI() {
+    const hasCode = document.getElementById('syncHasCode');
+    const noCode = document.getElementById('syncNoCode');
+    if (syncConfig) {
+        hasCode.style.display = 'block';
+        noCode.style.display = 'none';
+        document.getElementById('syncCodeDisplay').textContent = syncConfig.code;
+    } else {
+        hasCode.style.display = 'none';
+        noCode.style.display = 'block';
+    }
+}
+
+function updateSyncStatus(status) {
+    const el = document.getElementById('syncStatus');
+    const icon = document.getElementById('syncIcon');
+    const text = document.getElementById('syncText');
+    el.className = 'sync-status ' + status;
+    switch(status) {
+        case 'online': icon.textContent = '🌐'; text.textContent = 'Sync ON'; break;
+        case 'offline': icon.textContent = '📴'; text.textContent = syncConfig ? 'Sin red' : 'Sin sync'; break;
+        case 'syncing': icon.innerHTML = '<span class="spinner"></span>'; text.textContent = 'Sync...'; break;
+    }
+}
+
+function copySyncCode() {
+    if (!syncConfig) return;
+    navigator.clipboard.writeText(syncConfig.code).then(() => showToast('Código copiado'));
+}
+
+function shareViaWhatsApp() {
+    if (!syncConfig) return;
+    const text = 'Unite a mi RIOS con el código: *' + syncConfig.code + '*\n\n' + window.location.href;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+function showSyncModal() { showTab('sync'); }
+
+// ========================
+// EXPORT / IMPORT
+// ========================
+function exportData() {
+    const data = { screws: screws, history: history, exportedAt: new Date().toISOString(), version: 2 };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rios-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Backup descargado ✅');
+}
+
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.screws) {
+                if (screws.length > 0) {
+                    if (confirm('¿Reemplazar tus ' + screws.length + ' tornillos por los ' + data.screws.length + ' del archivo?')) screws = data.screws;
+                    else data.screws.forEach(ds => { if (!screws.some(s => s.name.toLowerCase() === ds.name.toLowerCase())) screws.push(ds); });
+                } else screws = data.screws;
+            }
+            if (data.history) history = data.history;
+            saveLocal();
+            renderScrewList();
+            showToast('Importados ' + screws.length + ' tornillos ✅');
+            if (syncConfig) pushToCloud();
+        } catch (err) { showToast('Error al importar', 'error'); }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
+
+function shareApp() {
+    navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copiado'));
+}
+
+// ========================
+// UTILS
+// ========================
+function showToast(msg, type) {
+    type = type || 'success';
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast show ' + type;
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function highlightText(text, query) {
+    if (!query) return escapeHtml(text);
+    const words = query.split(/\s+/).filter(w => w.length > 0);
+    words.sort((a, b) => b.length - a.length);
+    let result = escapeHtml(text);
+    words.forEach(word => {
+        const regex = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        result = result.replace(regex, '<span class="suggestion-highlight">$1</span>');
+    });
+    return result;
+}
+
+// ========================
+// INIT
+// ========================
+loadData();
+updateStats();
+updateSyncUI();
+deactivateStep2();
+
+if (syncConfig) {
+    startAutoSync();
+    pullFromCloud();
+}
+
+if (navigator.onLine && syncConfig) updateSyncStatus('online');
+else if (!navigator.onLine && syncConfig) updateSyncStatus('offline');
+else updateSyncStatus('offline');
+
+setTimeout(() => {
+    document.getElementById('calcSearchInput').focus();
+}, 300);
+
+// Modal close on outside click
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
 </body>
 </html>

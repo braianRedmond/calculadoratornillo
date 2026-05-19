@@ -1,6 +1,6 @@
 {
-  "name": "CalcPesa - Calculadora de Tornillos",
-  "short_name": "CalcPesa",
+  "name": "RIOS - Calculadora de Tornillos",
+  "short_name": "RIOS",
   "description": "Calculadora de peso de tornillos por cantidad con sync",
   "start_url": "/",
   "display": "standalone",

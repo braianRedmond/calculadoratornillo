@@ -20,6 +20,7 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #06b6d4;
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
@@ -62,6 +63,24 @@
             opacity: 0.9;
             margin-top: 4px;
         }
+
+        .sync-status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .sync-status.online { background: rgba(16,185,129,0.3); }
+        .sync-status.offline { background: rgba(239,68,68,0.3); }
+        .sync-status.syncing { background: rgba(245,158,11,0.3); }
 
         .container {
             max-width: 600px;
@@ -221,9 +240,20 @@
             box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
         }
 
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+        }
+
         .btn-secondary {
             background: var(--border);
             color: var(--text);
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
         }
 
         .result-card {
@@ -378,6 +408,8 @@
             transition: all 0.3s ease;
             box-shadow: var(--shadow-lg);
             white-space: nowrap;
+            max-width: 90vw;
+            text-align: center;
         }
 
         .toast.show {
@@ -387,6 +419,8 @@
 
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
+        .toast.warning { background: var(--warning); }
+        .toast.info { background: var(--info); }
 
         .quick-calc {
             display: grid;
@@ -561,13 +595,97 @@
             color: var(--primary);
         }
 
+        .sync-panel {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .sync-panel h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-code {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 12px 0;
+            word-break: break-all;
+        }
+
+        .sync-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .sync-actions .btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.85rem;
+        }
+
+        .code-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .code-input input {
+            flex: 1;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            font-size: 1.1rem;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .info-box.warning {
+            background: #fffbeb;
+            border-left-color: var(--warning);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 400px) {
             .header h1 { font-size: 1.2rem; }
             .result-value { font-size: 2rem; }
             .quick-calc { grid-template-columns: 1fr 1fr; }
+            .sync-actions { flex-direction: column; }
+            .code-input { flex-direction: column; }
         }
 
-        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -579,9 +697,14 @@
             border-radius: 3px;
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="header">
+        <div class="sync-status offline" id="syncStatus" onclick="showSyncModal()">
+            <span id="syncIcon">📴</span>
+            <span id="syncText">Sin sinc.</span>
+        </div>
         <h1>⚙️ CalcPesa</h1>
         <p>Calculadora de peso de tornillos</p>
     </div>
@@ -590,7 +713,8 @@
         <div class="tabs">
             <button class="tab active" onclick="showTab('calc')">🧮 Calcular</button>
             <button class="tab" onclick="showTab('screws')">📋 Tornillos</button>
-            <button class="tab" onclick="showTab('history')">📜 Historial</button>
+            <button class="tab" onclick="showTab('sync')">🔄 Sync</button>
+            <button class="tab" onclick="showTab('history')">📜 Hist.</button>
         </div>
 
         <!-- TAB: CALCULAR -->
@@ -697,6 +821,76 @@
             </div>
         </div>
 
+        <!-- TAB: SYNC -->
+        <div id="tab-sync" class="section">
+            <div class="sync-panel" id="syncPanel">
+                <h3>🌐 Sincronización</h3>
+                <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 12px;">
+                    Compartí tus tornillos entre todos tus dispositivos usando un código.
+                </p>
+
+                <div id="syncHasCode" style="display: none;">
+                    <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px;">Tu código de sincronización:</div>
+                    <div class="sync-code" id="syncCodeDisplay">---</div>
+                    <div class="sync-actions">
+                        <button class="btn btn-success" onclick="copySyncCode()">
+                            📋 Copiar Código
+                        </button>
+                        <button class="btn btn-warning" onclick="shareViaWhatsApp()">
+                            📱 Compartir
+                        </button>
+                    </div>
+                    <button class="btn btn-danger" style="margin-top: 8px;" onclick="disconnectSync()">
+                        🔌 Desconectar
+                    </button>
+                </div>
+
+                <div id="syncNoCode">
+                    <div class="info-box">
+                        <strong>¿Cómo funciona?</strong><br>
+                        Se crea un código único que vincula todos tus dispositivos. Los tornillos se guardan online y se sincronizan automáticamente.
+                    </div>
+                    <button class="btn btn-primary" onclick="createNewSync()">
+                        🆕 Crear Nuevo Código
+                    </button>
+                    <div style="text-align: center; margin: 16px 0; color: rgba(255,255,255,0.5); font-size: 0.9rem;">— o —</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px;">Ya tenés un código?</div>
+                    <div class="code-input">
+                        <input type="text" id="joinCode" placeholder="ABC123XYZ" maxlength="20" autocomplete="off">
+                        <button class="btn btn-success" onclick="joinSync()" style="width: auto; padding: 14px 20px;">
+                            🔗 Unirse
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💾 Backup Manual</div>
+                <div class="info-box warning">
+                    Si no querés usar sincronización online, podés exportar/importar los datos como archivo JSON.
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="exportData()">
+                        📤 Exportar JSON
+                    </button>
+                    <label class="btn btn-info" style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        📥 Importar JSON
+                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(this)">
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📱 Compartir App</div>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px;">
+                    Compartí el enlace de la app para que otros la usen:
+                </p>
+                <button class="btn btn-primary" onclick="shareApp()">
+                    🔗 Copiar Link de la App
+                </button>
+            </div>
+        </div>
+
         <!-- TAB: HISTORIAL -->
         <div id="tab-history" class="section">
             <div class="card">
@@ -738,36 +932,426 @@
     <div class="toast" id="toast"></div>
 
     <div class="footer">
-        CalcPesa v1.0 • Datos guardados en este dispositivo
+        CalcPesa v2.0 • Sync via GitHub Gist
     </div>
 
     <script>
         // ========================
-        // DATA & STORAGE
+        // CONFIGURACIÓN
         // ========================
+        const GIST_API = 'https://api.github.com/gists';
         const STORAGE_KEY = 'calcpesa_screws';
         const HISTORY_KEY = 'calcpesa_history';
+        const SYNC_KEY = 'calcpesa_sync';
+
         let screws = [];
         let history = [];
         let editingIndex = -1;
+        let syncConfig = null; // { code, gistId, token }
+        let syncInterval = null;
 
+        // ========================
+        // STORAGE LOCAL
+        // ========================
         function loadData() {
             try {
                 const s = localStorage.getItem(STORAGE_KEY);
                 if (s) screws = JSON.parse(s);
                 const h = localStorage.getItem(HISTORY_KEY);
                 if (h) history = JSON.parse(h);
+                const sync = localStorage.getItem(SYNC_KEY);
+                if (sync) {
+                    syncConfig = JSON.parse(sync);
+                    updateSyncUI();
+                    startAutoSync();
+                }
             } catch(e) {
                 console.error('Error loading data', e);
             }
         }
 
-        function saveScrews() {
+        function saveLocal() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(screws));
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         }
 
-        function saveHistory() {
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        function saveSyncConfig() {
+            if (syncConfig) {
+                localStorage.setItem(SYNC_KEY, JSON.stringify(syncConfig));
+            } else {
+                localStorage.removeItem(SYNC_KEY);
+            }
+        }
+
+        // ========================
+        // SYNC - GITHUB GIST
+        // ========================
+        function generateSyncCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 10; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function createNewSync() {
+            const code = generateSyncCode();
+            showToast('Creando sincronización...', 'info');
+
+            try {
+                // Crear gist anónimo
+                const response = await fetch(GIST_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        description: `CalcPesa sync - ${code}`,
+                        public: true,
+                        files: {
+                            'calcpesa-data.json': {
+                                content: JSON.stringify({
+                                    code: code,
+                                    screws: screws,
+                                    lastUpdate: new Date().toISOString(),
+                                    version: 2
+                                }, null, 2)
+                            }
+                        }
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error creating gist');
+
+                const data = await response.json();
+                syncConfig = {
+                    code: code,
+                    gistId: data.id,
+                    createdAt: new Date().toISOString()
+                };
+
+                saveSyncConfig();
+                updateSyncUI();
+                startAutoSync();
+                showToast(`¡Sincronización creada! Código: ${code}`, 'success');
+
+            } catch (error) {
+                console.error(error);
+                showToast('Error al crear sincronización. Intentá de nuevo.', 'error');
+            }
+        }
+
+        async function joinSync() {
+            const code = document.getElementById('joinCode').value.trim().toUpperCase();
+            if (!code || code.length < 6) {
+                showToast('Ingresá un código válido (mínimo 6 caracteres)', 'error');
+                return;
+            }
+
+            showToast('Buscando sincronización...', 'info');
+
+            try {
+                // Buscar gist por descripción
+                const searchResponse = await fetch(`https://api.github.com/gists?per_page=100`);
+                if (!searchResponse.ok) throw new Error('Error searching');
+
+                const gists = await searchResponse.json();
+                const gist = gists.find(g => g.description && g.description.includes(`CalcPesa sync - ${code}`));
+
+                if (!gist) {
+                    showToast('Código no encontrado. Verificá que esté bien escrito.', 'error');
+                    return;
+                }
+
+                // Obtener contenido
+                const dataResponse = await fetch(gist.url);
+                if (!dataResponse.ok) throw new Error('Error fetching data');
+
+                const gistData = await dataResponse.json();
+                const fileContent = gistData.files['calcpesa-data.json']?.content;
+
+                if (!fileContent) {
+                    showToast('No se encontraron datos en la sincronización', 'error');
+                    return;
+                }
+
+                const remoteData = JSON.parse(fileContent);
+
+                // Merge datos: si hay tornillos locales, preguntar (o combinar)
+                if (screws.length > 0 && remoteData.screws && remoteData.screws.length > 0) {
+                    if (confirm(`Encontrados ${remoteData.screws.length} tornillos remotos. ¿Reemplazar tus ${screws.length} tornillos locales? (Cancelar = combinar)`)) {
+                        screws = remoteData.screws;
+                    } else {
+                        // Combinar: agregar los que no existan localmente
+                        remoteData.screws.forEach(rs => {
+                            if (!screws.some(ls => ls.name.toLowerCase() === rs.name.toLowerCase())) {
+                                screws.push(rs);
+                            }
+                        });
+                    }
+                } else if (remoteData.screws) {
+                    screws = remoteData.screws;
+                }
+
+                syncConfig = {
+                    code: code,
+                    gistId: gist.id,
+                    joinedAt: new Date().toISOString()
+                };
+
+                saveLocal();
+                saveSyncConfig();
+                updateSyncUI();
+                updateScrewSelect();
+                renderScrewList();
+                startAutoSync();
+                showToast(`¡Conectado! ${screws.length} tornillos sincronizados`, 'success');
+
+            } catch (error) {
+                console.error(error);
+                showToast('Error al conectar. Verificá tu conexión.', 'error');
+            }
+        }
+
+        async function pushToCloud() {
+            if (!syncConfig || !syncConfig.gistId) return;
+
+            try {
+                updateSyncStatus('syncing');
+
+                const response = await fetch(`${GIST_API}/${syncConfig.gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'calcpesa-data.json': {
+                                content: JSON.stringify({
+                                    code: syncConfig.code,
+                                    screws: screws,
+                                    lastUpdate: new Date().toISOString(),
+                                    version: 2
+                                }, null, 2)
+                            }
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    updateSyncStatus('online');
+                    return true;
+                } else {
+                    updateSyncStatus('offline');
+                    return false;
+                }
+            } catch (error) {
+                updateSyncStatus('offline');
+                return false;
+            }
+        }
+
+        async function pullFromCloud() {
+            if (!syncConfig || !syncConfig.gistId) return;
+
+            try {
+                const response = await fetch(`${GIST_API}/${syncConfig.gistId}`);
+                if (!response.ok) return;
+
+                const gistData = await response.json();
+                const fileContent = gistData.files['calcpesa-data.json']?.content;
+                if (!fileContent) return;
+
+                const remoteData = JSON.parse(fileContent);
+                if (remoteData.screws && remoteData.screws.length > 0) {
+                    // Merge inteligente: combinar sin duplicados
+                    remoteData.screws.forEach(rs => {
+                        const existing = screws.find(ls => ls.name.toLowerCase() === rs.name.toLowerCase());
+                        if (!existing) {
+                            screws.push(rs);
+                        } else if (rs.updated && existing.updated && new Date(rs.updated) > new Date(existing.updated)) {
+                            existing.weight100 = rs.weight100;
+                            existing.updated = rs.updated;
+                        }
+                    });
+
+                    saveLocal();
+                    updateScrewSelect();
+                    renderScrewList();
+                    updateSyncStatus('online');
+                }
+            } catch (error) {
+                updateSyncStatus('offline');
+            }
+        }
+
+        function startAutoSync() {
+            if (syncInterval) clearInterval(syncInterval);
+
+            // Sync cada 30 segundos
+            syncInterval = setInterval(async () => {
+                if (syncConfig && navigator.onLine) {
+                    await pullFromCloud();
+                }
+            }, 30000);
+
+            // Sync al volver online
+            window.addEventListener('online', () => {
+                if (syncConfig) {
+                    pullFromCloud();
+                    updateSyncStatus('online');
+                }
+            });
+
+            window.addEventListener('offline', () => {
+                updateSyncStatus('offline');
+            });
+        }
+
+        function disconnectSync() {
+            if (!confirm('¿Desconectar sincronización? Los tornillos locales se mantienen.')) return;
+
+            if (syncInterval) clearInterval(syncInterval);
+            syncConfig = null;
+            saveSyncConfig();
+            updateSyncUI();
+            updateSyncStatus('offline');
+            showToast('Sincronización desconectada');
+        }
+
+        function updateSyncUI() {
+            const hasCode = document.getElementById('syncHasCode');
+            const noCode = document.getElementById('syncNoCode');
+
+            if (syncConfig) {
+                hasCode.style.display = 'block';
+                noCode.style.display = 'none';
+                document.getElementById('syncCodeDisplay').textContent = syncConfig.code;
+            } else {
+                hasCode.style.display = 'none';
+                noCode.style.display = 'block';
+            }
+        }
+
+        function updateSyncStatus(status) {
+            const el = document.getElementById('syncStatus');
+            const icon = document.getElementById('syncIcon');
+            const text = document.getElementById('syncText');
+
+            el.className = 'sync-status ' + status;
+
+            switch(status) {
+                case 'online':
+                    icon.textContent = '🌐';
+                    text.textContent = 'Sync ON';
+                    break;
+                case 'offline':
+                    icon.textContent = '📴';
+                    text.textContent = syncConfig ? 'Sin red' : 'Sin sync';
+                    break;
+                case 'syncing':
+                    icon.innerHTML = '<span class="spinner"></span>';
+                    text.textContent = 'Sync...';
+                    break;
+            }
+        }
+
+        function copySyncCode() {
+            if (!syncConfig) return;
+            navigator.clipboard.writeText(syncConfig.code).then(() => {
+                showToast('Código copiado al portapapeles');
+            });
+        }
+
+        function shareViaWhatsApp() {
+            if (!syncConfig) return;
+            const url = window.location.href;
+            const text = `Unite a mi CalcPesa con el código: *${syncConfig.code}*\n\nO abrí la app: ${url}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function showSyncModal() {
+            showTab('sync');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab')[2].classList.add('active'); // Sync tab
+        }
+
+        // ========================
+        // EXPORT / IMPORT
+        // ========================
+        function exportData() {
+            const data = {
+                screws: screws,
+                history: history,
+                exportedAt: new Date().toISOString(),
+                version: 2
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calcpesa-backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Backup descargado ✅');
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (data.screws) {
+                        if (screws.length > 0) {
+                            if (confirm(`¿Reemplazar tus ${screws.length} tornillos por los ${data.screws.length} del archivo?`)) {
+                                screws = data.screws;
+                            } else {
+                                data.screws.forEach(ds => {
+                                    if (!screws.some(s => s.name.toLowerCase() === ds.name.toLowerCase())) {
+                                        screws.push(ds);
+                                    }
+                                });
+                            }
+                        } else {
+                            screws = data.screws;
+                        }
+                    }
+
+                    if (data.history) {
+                        history = data.history;
+                    }
+
+                    saveLocal();
+                    updateScrewSelect();
+                    renderScrewList();
+                    showToast(`Importados ${screws.length} tornillos ✅`);
+
+                    // Si hay sync activo, subir a la nube
+                    if (syncConfig) {
+                        pushToCloud();
+                    }
+
+                } catch (err) {
+                    showToast('Error al importar. Verificá el archivo.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        function shareApp() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Link copiado al portapapeles');
+            });
         }
 
         // ========================
@@ -776,7 +1360,14 @@
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            event.target.classList.add('active');
+
+            // Encontrar el tab correcto
+            const tabs = ['calc', 'screws', 'sync', 'history'];
+            const index = tabs.indexOf(tabName);
+            if (index >= 0) {
+                document.querySelectorAll('.tab')[index].classList.add('active');
+            }
+
             document.getElementById('tab-' + tabName).classList.add('active');
 
             if (tabName === 'screws') {
@@ -788,6 +1379,9 @@
             }
             if (tabName === 'calc') {
                 updateScrewSelect();
+            }
+            if (tabName === 'sync') {
+                updateSyncUI();
             }
         }
 
@@ -848,11 +1442,9 @@
 
             resultCard.classList.add('show');
 
-            // Mostrar opción de guardar si no está en la lista
             const exists = screws.some(s => s.name.toLowerCase() === name.toLowerCase());
             saveOption.style.display = (name && !exists) ? 'block' : 'none';
 
-            // Guardar en historial
             addToHistory(name, qty, totalWeight);
         }
 
@@ -866,10 +1458,10 @@
             };
             history.unshift(entry);
             if (history.length > 50) history = history.slice(0, 50);
-            saveHistory();
+            saveLocal();
         }
 
-        function saveAndCalculate() {
+        async function saveAndCalculate() {
             const name = document.getElementById('screwName').value.trim();
             const w100 = parseFloat(document.getElementById('weight100').value);
 
@@ -878,11 +1470,22 @@
                 return;
             }
 
-            screws.push({ name: name, weight100: w100, created: new Date().toISOString() });
-            saveScrews();
+            screws.push({ 
+                name: name, 
+                weight100: w100, 
+                created: new Date().toISOString(),
+                updated: new Date().toISOString()
+            });
+
+            saveLocal();
             updateScrewSelect();
             document.getElementById('saveOption').style.display = 'none';
             showToast('Tornillo guardado ✅');
+
+            // Sync a la nube si hay configuración
+            if (syncConfig) {
+                await pushToCloud();
+            }
         }
 
         // ========================
@@ -948,17 +1551,15 @@
             document.getElementById('screwName').readOnly = true;
             document.getElementById('weight100').readOnly = true;
 
-            // Cambiar a tab calcular
+            showTab('calc');
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelector('.tab:first-child').classList.add('active');
-            document.getElementById('tab-calc').classList.add('active');
+            document.querySelectorAll('.tab')[0].classList.add('active');
 
             document.getElementById('quantity').focus();
             showToast(`Listo: ${s.name}`);
         }
 
-        function addScrew() {
+        async function addScrew() {
             const name = document.getElementById('newScrewName').value.trim();
             const weight = parseFloat(document.getElementById('newScrewWeight').value);
 
@@ -967,8 +1568,14 @@
                 return;
             }
 
-            screws.push({ name: name, weight100: weight, created: new Date().toISOString() });
-            saveScrews();
+            screws.push({ 
+                name: name, 
+                weight100: weight, 
+                created: new Date().toISOString(),
+                updated: new Date().toISOString()
+            });
+
+            saveLocal();
 
             document.getElementById('newScrewName').value = '';
             document.getElementById('newScrewWeight').value = '';
@@ -977,6 +1584,11 @@
             updateScrewSelect();
             updateStats();
             showToast('Tornillo agregado ✅');
+
+            // Sync a la nube
+            if (syncConfig) {
+                await pushToCloud();
+            }
         }
 
         function openEdit(index) {
@@ -992,7 +1604,7 @@
             editingIndex = -1;
         }
 
-        function saveEdit() {
+        async function saveEdit() {
             if (editingIndex < 0) return;
             const name = document.getElementById('editName').value.trim();
             const weight = parseFloat(document.getElementById('editWeight').value);
@@ -1004,21 +1616,31 @@
 
             screws[editingIndex].name = name;
             screws[editingIndex].weight100 = weight;
-            saveScrews();
+            screws[editingIndex].updated = new Date().toISOString();
+
+            saveLocal();
             renderScrewList();
             updateScrewSelect();
             closeModal();
             showToast('Tornillo actualizado ✅');
+
+            if (syncConfig) {
+                await pushToCloud();
+            }
         }
 
-        function deleteScrew(index) {
+        async function deleteScrew(index) {
             if (!confirm(`¿Eliminar "${screws[index].name}"?`)) return;
             screws.splice(index, 1);
-            saveScrews();
+            saveLocal();
             renderScrewList();
             updateScrewSelect();
             updateStats();
             showToast('Tornillo eliminado');
+
+            if (syncConfig) {
+                await pushToCloud();
+            }
         }
 
         // ========================
@@ -1069,7 +1691,7 @@
         function clearHistory() {
             if (!confirm('¿Borrar todo el historial?')) return;
             history = [];
-            saveHistory();
+            saveLocal();
             renderHistory();
             showToast('Historial borrado');
         }
@@ -1100,7 +1722,6 @@
             return div.innerHTML;
         }
 
-        // Cerrar modal al clickear afuera
         document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
@@ -1111,17 +1732,20 @@
         loadData();
         updateScrewSelect();
         updateStats();
+        updateSyncUI();
 
-        // Si hay datos de ejemplo pre-cargados (demo)
-        if (screws.length === 0) {
-            // Opcional: descomentar para tener datos de ejemplo
-            // screws = [
-            //     { name: "Tornillo M6 x 20 Zincado", weight100: 145.5, created: new Date().toISOString() },
-            //     { name: "Tornillo M8 x 40 Galvanizado", weight100: 320.0, created: new Date().toISOString() },
-            //     { name: "Tornillo M10 x 50 Inox", weight100: 580.2, created: new Date().toISOString() }
-            // ];
-            // saveScrews();
-            // updateScrewSelect();
+        if (syncConfig) {
+            startAutoSync();
+            pullFromCloud();
+        }
+
+        // Verificar estado de red inicial
+        if (navigator.onLine && syncConfig) {
+            updateSyncStatus('online');
+        } else if (!navigator.onLine && syncConfig) {
+            updateSyncStatus('offline');
+        } else {
+            updateSyncStatus('offline');
         }
     </script>
 </body>

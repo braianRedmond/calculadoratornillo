@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CalcPesa - Calculadora de Tornillos</title>
+    <title>RIOS - Calculadora de Tornillos</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚙️%3C/text%3E%3C/svg%3E">
     <style>
@@ -595,6 +595,83 @@
             color: var(--primary);
         }
 
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            margin-top: -4px;
+            padding-top: 4px;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.15s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.selected {
+            background: #eff6ff;
+        }
+
+        .suggestion-item.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .suggestion-item.selected .suggestion-meta {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .suggestion-text {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .suggestion-meta {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .suggestion-highlight {
+            background: rgba(37, 99, 235, 0.2);
+            border-radius: 2px;
+            font-weight: 700;
+        }
+
+        .suggestion-item.selected .suggestion-highlight {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .no-suggestions {
+            padding: 16px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .search-box-predictive input:focus {
+            border-radius: 12px 12px 0 0;
+            border-bottom-color: transparent;
+        }
+
         .sync-panel {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
@@ -808,8 +885,15 @@
                     <span>📋 Mis Tornillos</span>
                     <span class="badge badge-primary" id="screwCountBadge">0</span>
                 </div>
-                <div class="search-box">
-                    <input type="text" id="searchScrews" placeholder="Buscar tornillo..." oninput="renderScrewList()" autocomplete="off">
+                <div class="search-box-predictive" style="position: relative; margin-bottom: 16px;">
+                    <div style="position: relative;">
+                        <input type="text" id="searchScrews" placeholder="Buscar tornillo..." oninput="onSearchInput()" onkeydown="onSearchKeydown(event)" onfocus="onSearchFocus()" onblur="onSearchBlur()" autocomplete="off" style="padding-left: 44px; padding-right: 40px;">
+                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
+                        <button id="clearSearchBtn" onclick="clearSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; display: none; padding: 4px;">❌</button>
+                    </div>
+                    <div id="searchSuggestions" class="suggestions-dropdown" style="display: none;">
+                        <!-- Sugerencias se insertan aquí -->
+                    </div>
                 </div>
                 <div class="screw-list" id="screwList">
                     <div class="empty-state">
@@ -1506,27 +1590,220 @@
             select.value = currentVal;
         }
 
-        function renderScrewList() {
+        // ========================
+        // BÚSQUEDA PREDICTIVA
+        // ========================
+        let selectedSuggestionIndex = -1;
+        let currentSuggestions = [];
+
+        function onSearchInput() {
+            const input = document.getElementById('searchScrews');
+            const query = input.value.trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+
+            clearBtn.style.display = query ? 'block' : 'none';
+
+            if (query.length === 0) {
+                hideSuggestions();
+                renderScrewList();
+                return;
+            }
+
+            // Generar sugerencias predictivas
+            const queryLower = query.toLowerCase();
+            currentSuggestions = screws.map((s, idx) => ({ screw: s, index: idx }))
+                .filter(item => {
+                    const name = item.screw.name.toLowerCase();
+                    // Buscar coincidencias en cualquier parte del nombre
+                    return name.includes(queryLower) || 
+                           // También buscar por palabras individuales
+                           queryLower.split(/\s+/).every(word => name.includes(word));
+                })
+                .sort((a, b) => {
+                    const nameA = a.screw.name.toLowerCase();
+                    const nameB = b.screw.name.toLowerCase();
+                    const q = queryLower;
+
+                    // Prioridad 1: Empieza exactamente con la query
+                    if (nameA.startsWith(q) && !nameB.startsWith(q)) return -1;
+                    if (nameB.startsWith(q) && !nameA.startsWith(q)) return 1;
+
+                    // Prioridad 2: Empieza con alguna palabra de la query
+                    const wordsA = nameA.split(/\s+/);
+                    const wordsB = nameB.split(/\s+/);
+                    const startsWithA = wordsA.some(w => w.startsWith(q));
+                    const startsWithB = wordsB.some(w => w.startsWith(q));
+                    if (startsWithA && !startsWithB) return -1;
+                    if (startsWithB && !startsWithA) return 1;
+
+                    // Prioridad 3: Más corto primero (más relevante)
+                    return nameA.length - nameB.length;
+                })
+                .slice(0, 8); // Máximo 8 sugerencias
+
+            selectedSuggestionIndex = -1;
+            renderSuggestions(queryLower);
+            renderScrewListFiltered(currentSuggestions);
+        }
+
+        function renderSuggestions(query) {
+            const dropdown = document.getElementById('searchSuggestions');
+
+            if (currentSuggestions.length === 0) {
+                dropdown.innerHTML = '<div class="no-suggestions">No se encontraron tornillos</div>';
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            dropdown.innerHTML = currentSuggestions.map((item, i) => {
+                const name = item.screw.name;
+                const highlightedName = highlightText(name, query);
+
+                return `
+                    <div class="suggestion-item" data-index="${i}" onclick="selectSuggestion(${i})" onmouseenter="hoverSuggestion(${i})">
+                        <div>
+                            <div class="suggestion-text">${highlightedName}</div>
+                        </div>
+                        <div class="suggestion-meta">${item.screw.weight100}g/100u</div>
+                    </div>
+                `;
+            }).join('');
+
+            dropdown.style.display = 'block';
+        }
+
+        function highlightText(text, query) {
+            if (!query) return escapeHtml(text);
+
+            const words = query.split(/\s+/).filter(w => w.length > 0);
+            let result = escapeHtml(text);
+
+            // Ordenar palabras por longitud descendente para no reemplazar parcialmente
+            words.sort((a, b) => b.length - a.length);
+
+            words.forEach(word => {
+                const regex = new RegExp(`(${escapeRegex(word)})`, 'gi');
+                result = result.replace(regex, '<span class="suggestion-highlight">$1</span>');
+            });
+
+            return result;
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function selectSuggestion(index) {
+            if (index < 0 || index >= currentSuggestions.length) return;
+
+            const item = currentSuggestions[index];
+            document.getElementById('searchScrews').value = item.screw.name;
+            hideSuggestions();
+            renderScrewListFiltered([item]);
+            document.getElementById('clearSearchBtn').style.display = 'block';
+        }
+
+        function hoverSuggestion(index) {
+            selectedSuggestionIndex = index;
+            updateSuggestionSelection();
+        }
+
+        function onSearchKeydown(e) {
+            if (currentSuggestions.length === 0) return;
+
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, currentSuggestions.length - 1);
+                    updateSuggestionSelection();
+                    scrollToSuggestion();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+                    updateSuggestionSelection();
+                    scrollToSuggestion();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedSuggestionIndex >= 0) {
+                        selectSuggestion(selectedSuggestionIndex);
+                    } else if (currentSuggestions.length > 0) {
+                        // Si no hay selección, usar la primera
+                        selectSuggestion(0);
+                    }
+                    break;
+                case 'Escape':
+                    hideSuggestions();
+                    break;
+            }
+        }
+
+        function updateSuggestionSelection() {
+            const items = document.querySelectorAll('.suggestion-item');
+            items.forEach((item, i) => {
+                if (i === selectedSuggestionIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function scrollToSuggestion() {
+            const dropdown = document.getElementById('searchSuggestions');
+            const selected = dropdown.querySelector('.suggestion-item.selected');
+            if (selected) {
+                selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        function hideSuggestions() {
+            document.getElementById('searchSuggestions').style.display = 'none';
+            selectedSuggestionIndex = -1;
+        }
+
+        function onSearchFocus() {
+            const query = document.getElementById('searchScrews').value.trim();
+            if (query.length > 0) {
+                onSearchInput();
+            }
+        }
+
+        function onSearchBlur() {
+            // Delay para permitir clicks en sugerencias
+            setTimeout(() => {
+                hideSuggestions();
+            }, 200);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchScrews').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            hideSuggestions();
+            renderScrewList();
+        }
+
+        function renderScrewListFiltered(suggestions) {
             const list = document.getElementById('screwList');
-            const search = document.getElementById('searchScrews').value.toLowerCase();
-            const filtered = screws.filter(s => s.name.toLowerCase().includes(search));
 
             document.getElementById('screwCountBadge').textContent = screws.length;
             document.getElementById('totalScrews').textContent = screws.length;
 
-            if (filtered.length === 0) {
+            if (suggestions.length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">🔩</div>
-                        <h3>${screws.length === 0 ? 'No hay tornillos guardados' : 'No se encontraron resultados'}</h3>
-                        <p>${screws.length === 0 ? 'Agregá tu primer tornillo para empezar' : 'Probá con otra búsqueda'}</p>
+                        <h3>No se encontraron resultados</h3>
+                        <p>Probá con otra búsqueda o agregá un nuevo tornillo</p>
                     </div>
                 `;
                 return;
             }
 
-            list.innerHTML = filtered.map((s, i) => {
-                const originalIndex = screws.indexOf(s);
+            list.innerHTML = suggestions.map(item => {
+                const s = item.screw;
+                const originalIndex = item.index;
                 return `
                     <div class="screw-item">
                         <div class="screw-info">
@@ -1535,8 +1812,50 @@
                         </div>
                         <div class="screw-actions">
                             <button class="btn-icon use" onclick="useScrew(${originalIndex})" title="Usar">⚖️</button>
-                            <button class="btn-icon edit" onclick="openEdit(${originalIndex})" title="Editar">✏️</button>
+                            < <button class="btn-icon edit" onclick="openEdit(${originalIndex})" title="Editar">✏️</button>
                             <button class="btn-icon delete" onclick="deleteScrew(${originalIndex})" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderScrewList() {
+            const search = document.getElementById('searchScrews').value.toLowerCase().trim();
+
+            document.getElementById('screwCountBadge').textContent = screws.length;
+            document.getElementById('totalScrews').textContent = screws.length;
+
+            if (search.length > 0) {
+                // Si hay texto en el buscador, usar el filtrado predictivo
+                onSearchInput();
+                return;
+            }
+
+            const list = document.getElementById('screwList');
+
+            if (screws.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔩</div>
+                        <h3>No hay tornillos guardados</h3>
+                        <p>Agregá tu primer tornillo para empezar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = screws.map((s, i) => {
+                return `
+                    <div class="screw-item">
+                        <div class="screw-info">
+                            <h3>${escapeHtml(s.name)}</h3>
+                            <p>💾 ${s.weight100}g cada 100u • ${(s.weight100/100).toFixed(3)}g c/u</p>
+                        </div>
+                        <div class="screw-actions">
+                            <button class="btn-icon use" onclick="useScrew(${i})" title="Usar">⚖️</button>
+                            <button class="btn-icon edit" onclick="openEdit(${i})" title="Editar">✏️</button>
+                            <button class="btn-icon delete" onclick="deleteScrew(${i})" title="Eliminar">🗑️</button>
                         </div>
                     </div>
                 `;

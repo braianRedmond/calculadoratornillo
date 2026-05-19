@@ -1,7 +1,7 @@
 {
   "name": "CalcPesa - Calculadora de Tornillos",
   "short_name": "CalcPesa",
-  "description": "Calculadora de peso de tornillos por cantidad",
+  "description": "Calculadora de peso de tornillos por cantidad con sync",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",

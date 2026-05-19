@@ -212,6 +212,77 @@
             opacity: 0.7;
         }
 
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+        }
+
+        .step-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-predictive {
+            position: relative;
+        }
+
+        .search-predictive input {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        #step2Card.active {
+            opacity: 1;
+            pointer-events: all;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.1);
+        }
+
+        #step2Card.active .step-number {
+            background: var(--success);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
+        }
+
+        #step2Card.active .step-label {
+            color: var(--success);
+        }
+
+        .no-suggestions-btn {
+            padding: 12px 16px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 700;
+            border-top: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .no-suggestions-btn:hover {
+            background: rgba(255, 107, 0, 0.1);
+        }
+
         .btn {
             width: 100%;
             padding: 16px;
@@ -487,6 +558,19 @@
 
         .quick-btn:active {
             transform: scale(0.95);
+        }
+
+        .quick-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: var(--border);
+            color: var(--text-light);
+        }
+
+        .quick-btn:disabled:hover {
+            background: #0a0a0a;
+            box-shadow: none;
+            color: var(--text-light);
         }
 
         .history-list {
@@ -858,52 +942,76 @@
 
         <!-- TAB: CALCULAR -->
         <div id="tab-calc" class="section active">
+            <!-- PASO 1: BUSCAR TORNILLO -->
             <div class="card">
-                <div class="card-title">🔧 Seleccionar Tornillo</div>
-                <div class="form-group">
-                    <label>Tornillo guardado</label>
-                    <select id="screwSelect" onchange="onScrewSelect()">
-                        <option value="">-- Seleccionar o cargar manual --</option>
-                    </select>
+                <div class="step-indicator">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Buscar Tornillo</span>
                 </div>
-                <div style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin: 8px 0;">— o cargar manualmente —</div>
-                <div class="form-group">
-                    <label>Nombre / Medida</label>
-                    <input type="text" id="screwName" placeholder="Ej: Tornillo M8 x 40" autocomplete="off">
+                <div class="search-predictive" style="position: relative;">
+                    <div style="position: relative;">
+                        <input type="text" id="calcSearchInput" placeholder="Escribí el nombre o medida..." 
+                               oninput="onCalcSearchInput()" onkeydown="onCalcSearchKeydown(event)" 
+                               onfocus="onCalcSearchFocus()" onblur="onCalcSearchBlur()" 
+                               autocomplete="off" style="padding-left: 44px; padding-right: 40px;">
+                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
+                        <button id="calcClearSearch" onclick="clearCalcSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; display: none; padding: 4px; color: var(--primary);">❌</button>
+                    </div>
+                    <div id="calcSuggestions" class="suggestions-dropdown" style="display: none;">
+                        <!-- Sugerencias -->
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Peso de 100 unidades (gramos)</label>
-                    <input type="number" id="weight100" placeholder="Ej: 250" step="0.01" min="0">
-                    <div class="input-hint">Pesá 100 tornillos en una balanza y anotá el valor</div>
+                <div id="selectedScrewInfo" style="display: none; margin-top: 16px; padding: 12px; background: #0a0a0a; border-radius: 10px; border: 2px solid var(--primary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 700; color: var(--primary); font-size: 1rem;" id="selectedScrewName">-</div>
+                            <div style="font-size: 0.85rem; color: var(--text); margin-top: 2px;" id="selectedScrewWeight">-</div>
+                        </div>
+                        <button class="btn-icon delete" onclick="clearSelectedScrew()" title="Cambiar">🗑️</button>
+                    </div>
+                </div>
+                <div id="newScrewForm" style="display: none; margin-top: 16px;">
+                    <div style="border-top: 2px solid var(--border); padding-top: 16px;">
+                        <div style="font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">⚡ Tornillo Nuevo</div>
+                        <div class="form-group">
+                            <label>Nombre / Medida</label>
+                            <input type="text" id="newCalcScrewName" placeholder="Ej: Tornillo M8 x 40" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>Peso de 100 unidades (gramos)</label>
+                            <input type="number" id="newCalcWeight100" placeholder="Ej: 250" step="0.01" min="0">
+                            <div class="input-hint">Pesá 100 tornillos en balanza y anotá el valor</div>
+                        </div>
+                        <button class="btn btn-success" onclick="saveNewScrewFromCalc()" style="margin-top: 8px;">
+                            💾 Guardar y Usar
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-title">⚖️ Cantidad a Calcular</div>
+            <!-- PASO 2: CANTIDAD -->
+            <div class="card" id="step2Card" style="opacity: 0.5; pointer-events: none; transition: all 0.3s;">
+                <div class="step-indicator">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Cantidad</span>
+                </div>
                 <div class="form-group">
                     <label>Cantidad de unidades</label>
-                    <input type="number" id="quantity" placeholder="Ej: 50" min="1" step="1" oninput="calculate()">
+                    <input type="number" id="quantity" placeholder="Ej: 50" min="1" step="1" oninput="calculate()" disabled>
                 </div>
                 <div class="quick-calc">
-                    <button class="quick-btn" onclick="setQuantity(25)">25 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(40)">40 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(50)">50 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(100)">100 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(200)">200 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(500)">500 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(1000)">1000 u.</button>
-                    <button class="quick-btn" onclick="setQuantity(2000)">2000 u.</button>
+                    <button class="quick-btn" onclick="setQuantity(25)" disabled>25</button>
+                    <button class="quick-btn" onclick="setQuantity(40)" disabled>40</button>
+                    <button class="quick-btn" onclick="setQuantity(50)" disabled>50</button>
+                    <button class="quick-btn" onclick="setQuantity(100)" disabled>100</button>
+                    <button class="quick-btn" onclick="setQuantity(200)" disabled>200</button>
+                    <button class="quick-btn" onclick="setQuantity(500)" disabled>500</button>
+                    <button class="quick-btn" onclick="setQuantity(1000)" disabled>1000</button>
+                    <button class="quick-btn" onclick="setQuantity(2000)" disabled>2000</button>
                 </div>
             </div>
 
-            <div class="card" style="display: none;" id="saveOption">
-                <div class="form-group">
-                    <button class="btn btn-success" onclick="saveAndCalculate()">
-                        💾 Guardar Tornillo y Calcular
-                    </button>
-                </div>
-            </div>
-
+            <!-- RESULTADO -->
             <div class="result-card" id="resultCard">
                 <div class="result-label">Peso Estimado</div>
                 <div class="result-value" id="resultValue">0</div>
@@ -1524,7 +1632,10 @@
                 renderHistory();
             }
             if (tabName === 'calc') {
-                updateScrewSelect();
+                // Focus en el buscador al volver a calcular
+                setTimeout(() => {
+                    document.getElementById('calcSearchInput').focus();
+                }, 100);
             }
             if (tabName === 'sync') {
                 updateSyncUI();
@@ -1638,18 +1749,8 @@
         // SCREW LIST
         // ========================
         function updateScrewSelect() {
-            const select = document.getElementById('screwSelect');
-            const currentVal = select.value;
-            select.innerHTML = '<option value="">-- Seleccionar o cargar manual --</option>';
-
-            screws.forEach((s, i) => {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = `${s.name} (${s.weight100}g/100u)`;
-                select.appendChild(opt);
-            });
-
-            select.value = currentVal;
+            // Ya no se usa select nativo, ahora es input predictivo
+            // Esta función se mantiene por compatibilidad pero no hace nada
         }
 
         // ========================
@@ -1926,18 +2027,24 @@
 
         function useScrew(index) {
             const s = screws[index];
-            document.getElementById('screwSelect').value = index;
-            document.getElementById('screwName').value = s.name;
-            document.getElementById('weight100').value = s.weight100;
-            document.getElementById('screwName').readOnly = true;
-            document.getElementById('weight100').readOnly = true;
+            selectedCalcScrew = { screw: s, index: index };
 
+            // Cambiar a tab calcular
             showTab('calc');
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab')[0].classList.add('active');
 
+            // Setear valores
+            document.getElementById('calcSearchInput').value = s.name;
+            document.getElementById('selectedScrewName').textContent = s.name;
+            document.getElementById('selectedScrewWeight').textContent = `${s.weight100}g cada 100 unidades`;
+            document.getElementById('selectedScrewInfo').style.display = 'block';
+            document.getElementById('newScrewForm').style.display = 'none';
+            document.getElementById('calcClearSearch').style.display = 'block';
+
+            activateStep2();
             document.getElementById('quantity').focus();
-            showToast(`Listo: ${s.name}`);
+            showToast(`✅ ${s.name} listo para calcular`);
         }
 
         async function addScrew() {
@@ -2111,9 +2218,9 @@
         // INIT
         // ========================
         loadData();
-        updateScrewSelect();
         updateStats();
         updateSyncUI();
+        deactivateStep2(); // Iniciar con paso 2 desactivado
 
         if (syncConfig) {
             startAutoSync();
@@ -2128,6 +2235,11 @@
         } else {
             updateSyncStatus('offline');
         }
+
+        // Focus inicial en el buscador
+        setTimeout(() => {
+            document.getElementById('calcSearchInput').focus();
+        }, 300);
     </script>
 </body>
 </html>

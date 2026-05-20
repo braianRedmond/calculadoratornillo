@@ -646,14 +646,30 @@ function updateStats(){
 // =========================
 // SYNC - JSONStorage.net
 // =========================
+function cleanSyncData(){
+    let cleanScrew=s=>{return{name:String(s.name||''),weight100:parseFloat(s.weight100)||0,created:String(s.created||new Date().toISOString()),updated:String(s.updated||new Date().toISOString())};};
+    let cleanHist=h=>{return{name:String(h.name||''),qty:parseInt(h.qty)||0,weight:parseFloat(h.weight)||0,time:String(h.time||new Date().toISOString())};};
+    return{
+        screws:screws.map(cleanScrew),
+        history:history.slice(0,30).map(cleanHist),
+        meta:{app:'RIOS',version:3,updatedAt:new Date().toISOString()}
+    };
+}
+
 async function createNewSync(){
     toast('Creando sincronizaci&#xF3;n...','i');
     try{
-        let data={screws:screws,history:history,createdAt:new Date().toISOString(),version:3,app:'RIOS'};
-        let r=await fetch(JS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-        if(!r.ok) throw new Error('HTTP '+r.status);
+        let data=cleanSyncData();
+        let body=JSON.stringify(data);
+        if(body.length>500000){ toast('Datos muy grandes. Borr&#xE1; historial viejo.','e'); return; }
+        let r=await fetch(JS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:body});
+        if(!r.ok){
+            let txt=await r.text().catch(()=>'').catch(()=>'');
+            console.error('JSONStorage 400 response:',txt.substring(0,500));
+            throw new Error('HTTP '+r.status+' - '+txt.substring(0,200));
+        }
         let result=await r.json();
-        if(!result.uri) throw new Error('No URI');
+        if(!result.uri) throw new Error('No URI en respuesta');
         let code=result.uri.replace('https://api.jsonstorage.net/v1/json/','');
         syncData={code:code,uri:result.uri,createdAt:new Date().toISOString()};
         saveSyncData();
@@ -681,7 +697,7 @@ async function joinSync(){
                 screws=rd.screws;
             }else{
                 rd.screws.forEach(rs=>{
-                    if(!screws.some(ls=>ls.name.toLowerCase()===rs.name.toLowerCase())) screws.push(rs);
+                    if(!screws.some(ls=>ls.name.toLowerCase()===(rs.name||'').toLowerCase())) screws.push(rs);
                 });
             }
         }else{
@@ -704,8 +720,10 @@ async function joinSync(){
 async function pushToCloud(){
     if(!syncData || !syncData.uri) return;
     try{
-        let data={screws:screws,history:history,updatedAt:new Date().toISOString(),version:3,app:'RIOS'};
-        let r=await fetch(syncData.uri,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+        let data=cleanSyncData();
+        let body=JSON.stringify(data);
+        if(body.length>500000) return;
+        let r=await fetch(syncData.uri,{method:'PUT',headers:{'Content-Type':'application/json'},body:body});
         if(r.ok) console.log('Sync OK'); else console.log('Sync failed:',r.status);
     }catch(e){ console.error('Push error:',e); }
 }
@@ -716,9 +734,9 @@ async function pullFromCloud(){
         let r=await fetch(syncData.uri);
         if(!r.ok) return;
         let rd=await r.json();
-        if(rd.screws){
+        if(rd.screws && Array.isArray(rd.screws)){
             rd.screws.forEach(rs=>{
-                let ex=screws.find(ls=>ls.name.toLowerCase()===rs.name.toLowerCase());
+                let ex=screws.find(ls=>ls.name.toLowerCase()===(rs.name||'').toLowerCase());
                 if(!ex) screws.push(rs);
                 else if(rs.updated && ex.updated && new Date(rs.updated)>new Date(ex.updated)){
                     ex.weight100=rs.weight100;

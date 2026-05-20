@@ -118,13 +118,13 @@ input::placeholder{color:#555}input:disabled{opacity:.5;cursor:not-allowed}
 <base target="_blank">
 </head>
 <body>
-<div class="header"><h1>&#x2699;&#xFE0F; RIOS</h1><p>Calculadora de peso de tornillos</p></div>
+<div class="header"><h1>⚙️ RIOS</h1><p>Calculadora de peso de tornillos</p></div>
 <div class="container">
 <div class="tabs">
-<button class="tab active" onclick="switchTab('calc')">&#x1F9EE; Calcular</button>
-<button class="tab" onclick="switchTab('screws')">&#x1F4CB; Tornillos</button>
-<button class="tab" onclick="switchTab('sync')">&#x1F504; Sync</button>
-<button class="tab" onclick="switchTab('history')">&#x1F4DC; Hist.</button>
+<button class="tab active" onclick="switchTab('calc')">🧮 Calcular</button>
+<button class="tab" onclick="switchTab('screws')">📋 Tornillos</button>
+<button class="tab" onclick="switchTab('sync')">🔄 Sync</button>
+<button class="tab" onclick="switchTab('history')">📜 Hist.</button>
 </div>
 
 <div id="tab-calc" class="section active">
@@ -132,22 +132,22 @@ input::placeholder{color:#555}input:disabled{opacity:.5;cursor:not-allowed}
 <div class="step-indicator"><span class="step-number">1</span><span class="step-label">Buscar Tornillo</span></div>
 <div class="sp" style="position:relative">
 <div style="position:relative">
-<input type="text" id="calcSearchInput" placeholder="Escrib&#xED; el nombre o medida..." oninput="onCalcSearchInput()" onkeydown="onCalcSearchKeydown(event)" onfocus="onCalcSearchFocus()" onblur="onCalcSearchBlur()" autocomplete="off" style="padding-left:44px;padding-right:40px">
-<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">&#x1F50D;</span>
-<button id="clearSearchBtn" onclick="clearCalcSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.2rem;cursor:pointer;display:none;padding:4px;color:var(--p)">&#x274C;</button>
+<input type="text" id="calcSearchInput" placeholder="Escribí el nombre o medida..." oninput="onCalcSearchInput()" onkeydown="onCalcSearchKeydown(event)" onfocus="onCalcSearchFocus()" onblur="onCalcSearchBlur()" autocomplete="off" style="padding-left:44px;padding-right:40px">
+<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">🔍</span>
+<button id="clearSearchBtn" onclick="clearCalcSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.2rem;cursor:pointer;display:none;padding:4px;color:var(--p)">❌</button>
 </div>
 <div id="searchDropdown" class="sd" style="display:none"></div>
 </div>
 <div id="selectedScrewInfo" class="sbox" style="display:none">
 <div><div class="sname" id="selScrewName">-</div><div class="sw" id="selScrewWeight">-</div></div>
-<button class="bicon x" onclick="clearSelectedScrew()" title="Cambiar">&#x1F5D1;&#xFE0F;</button>
+<button class="bicon x" onclick="clearSelectedScrew()" title="Cambiar">🗑️</button>
 </div>
 <div id="newScrewForm" style="display:none;margin-top:16px">
 <div style="border-top:2px solid var(--b);padding-top:16px">
-<div style="font-size:.85rem;color:var(--p);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">&#x26A1; Tornillo Nuevo</div>
+<div style="font-size:.85rem;color:var(--p);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">⚡ Tornillo Nuevo</div>
 <div class="form-group"><label>Nombre / Medida</label><input type="text" id="newCalcName" placeholder="Ej: Tornillo M8 x 40" autocomplete="off"></div>
-<div class="form-group"><label>Peso de 100 unidades (gramos)</label><input type="number" id="newCalcWeight" placeholder="Ej: 250" step=".01" min="0"><div class="hint">Pes&#xE1; 100 tornillos en balanza y anot&#xE1; el valor</div></div>
-<button class="btn btn-s" onclick="saveNewScrewCalc()" style="margin-top:8px">&#x1F4BE; Guardar y Usar</button>
+<div class="form-group"><label>Peso de 100 unidades (gramos)</label><input type="number" id="newCalcWeight" placeholder="Ej: 250" step=".01" min="0"><div class="hint">Pesá 100 tornillos en balanza y anotá el valor</div></div>
+<button class="btn btn-s" onclick="saveNewScrewCalc()" style="margin-top:8px">💾 Guardar y Usar</button>
 </div>
 </div>
 </div>
@@ -171,64 +171,64 @@ input::placeholder{color:#555}input:disabled{opacity:.5;cursor:not-allowed}
 <div class="res-l">Peso Estimado</div>
 <div class="res-v" id="resValue">0</div>
 <div class="res-u" id="resUnit">gramos</div>
-<div class="res-d" id="resDetail">0 unidades &#xD7; 0g c/u</div>
+<div class="res-d" id="resDetail">0 unidades × 0g c/u</div>
 </div>
 </div>
 
 <div id="tab-screws" class="section">
 <div class="stats">
 <div class="sbox2"><div class="n" id="totalScrews">0</div><div class="l">Tornillos guardados</div></div>
-<div class="sbox2"><div class="n" id="todayCalcs">0</div><div class="l">C&#xE1;lculos hoy</div></div>
+<div class="sbox2"><div class="n" id="todayCalcs">0</div><div class="l">Cálculos hoy</div></div>
 </div>
 <div class="card">
-<div style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">&#x2795; Agregar Nuevo Tornillo</div>
+<div style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">➕ Agregar Nuevo Tornillo</div>
 <div class="form-group"><label>Nombre / Medida</label><input type="text" id="newScrewName" placeholder="Ej: Tornillo M6 x 20 Zincado" autocomplete="off"></div>
 <div class="form-group"><label>Peso de 100 unidades (g)</label><input type="number" id="newScrewWeight100" placeholder="Ej: 145.5" step=".01" min="0"></div>
-<button class="btn btn-p" onclick="addScrew()">&#x2795; Agregar a la lista</button>
+<button class="btn btn-p" onclick="addScrew()">➕ Agregar a la lista</button>
 </div>
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-<span style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px">&#x1F4CB; Mis Tornillos</span>
+<span style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px">📋 Mis Tornillos</span>
 <span class="bad bad-p" id="screwCountBadge">0</span>
 </div>
 <div style="position:relative;margin-bottom:16px">
 <input type="text" id="screwsSearchInput" placeholder="Buscar tornillo..." oninput="renderScrewList()" autocomplete="off" style="padding-left:44px">
-<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">&#x1F50D;</span>
+<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">🔍</span>
 </div>
-<div class="slist" id="screwsListContainer"><div class="empty"><div class="icon">&#x1F529;</div><h3>No hay tornillos guardados</h3><p>Agreg&#xE1; tu primer tornillo para empezar</p></div></div>
+<div class="slist" id="screwsListContainer"><div class="empty"><div class="icon">🔩</div><h3>No hay tornillos guardados</h3><p>Agregá tu primer tornillo para empezar</p></div></div>
 </div>
 </div>
 
 <div id="tab-sync" class="section">
 <div class="sync" id="syncPanel">
-<h3>&#x1F310; Sincronizaci&#xF3;n</h3>
-<p style="font-size:.85rem;opacity:.8;margin-bottom:12px">Compart&#xED; tus tornillos entre dispositivos. Sin cuenta, sin registro.</p>
+<h3>🌐 Sincronización</h3>
+<p style="font-size:.85rem;opacity:.8;margin-bottom:12px">Compartí tus tornillos entre dispositivos. Sin cuenta, sin registro.</p>
 <div id="syncHaveCode" style="display:none">
-<div style="font-size:.8rem;opacity:.7;margin-bottom:4px">Tu c&#xF3;digo de sincronizaci&#xF3;n:</div>
+<div style="font-size:.8rem;opacity:.7;margin-bottom:4px">Tu código de sincronización:</div>
 <div class="scode" id="syncCodeDisplay">---</div>
 <div class="sact2">
-<button class="btn btn-s" onclick="copySyncCode()">&#x1F4CB; Copiar</button>
-<button class="btn btn-w" onclick="shareWhatsApp()">&#x1F4F1; WhatsApp</button>
+<button class="btn btn-s" onclick="copySyncCode()">📋 Copiar</button>
+<button class="btn btn-w" onclick="shareWhatsApp()">📱 WhatsApp</button>
 </div>
-<button class="btn btn-d" style="margin-top:8px" onclick="disconnectSync()">&#x1F50C; Desconectar</button>
+<button class="btn btn-d" style="margin-top:8px" onclick="disconnectSync()">🔌 Desconectar</button>
 </div>
 <div id="syncNoCode">
-<div class="inf"><strong>&#xBF;C&#xF3;mo funciona?</strong><br>Se crea un c&#xF3;digo &#xFA;nico que vincula todos tus dispositivos. No requiere cuenta.</div>
-<button class="btn btn-p" onclick="createNewSync()">&#x1F195; Crear C&#xF3;digo</button>
-<div style="text-align:center;margin:16px 0;color:rgba(255,255,255,.5)">&#x2014; o &#x2014;</div>
-<div style="font-size:.8rem;opacity:.7;margin-bottom:4px">Ya ten&#xE9;s un c&#xF3;digo?</div>
+<div class="inf"><strong>¿Cómo funciona?</strong><br>Se crea un código único que vincula todos tus dispositivos. No requiere cuenta.</div>
+<button class="btn btn-p" onclick="createNewSync()">🆕 Crear Código</button>
+<div style="text-align:center;margin:16px 0;color:rgba(255,255,255,.5)">— o —</div>
+<div style="font-size:.8rem;opacity:.7;margin-bottom:4px">Ya tenés un código?</div>
 <div style="display:flex;gap:8px;margin-top:12px">
 <input type="text" id="joinCodeInput" placeholder="Ej: 550e8400-e29b-41d4" maxlength="50" autocomplete="off" style="flex:1;text-align:center;font-family:monospace;letter-spacing:1px;font-size:.9rem">
-<button class="btn btn-s" onclick="joinSync()" style="width:auto;padding:14px 20px">&#x1F517; Unirse</button>
+<button class="btn btn-s" onclick="joinSync()" style="width:auto;padding:14px 20px">🔗 Unirse</button>
 </div>
 </div>
 </div>
 <div class="card">
-<div style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">&#x1F4BE; Backup Manual</div>
-<div class="inf w">Export&#xE1;/import&#xE1; los datos como archivo JSON.</div>
+<div style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">💾 Backup Manual</div>
+<div class="inf w">Exportá/importá los datos como archivo JSON.</div>
 <div style="display:flex;gap:8px">
-<button class="btn btn-n" onclick="exportData()">&#x1F4E4; Exportar</button>
-<label class="btn btn-i" style="cursor:pointer;display:flex;align-items:center;justify-content:center">&#x1F4E5; Importar<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(this)"></label>
+<button class="btn btn-n" onclick="exportData()">📤 Exportar</button>
+<label class="btn btn-i" style="cursor:pointer;display:flex;align-items:center;justify-content:center">📥 Importar<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(this)"></label>
 </div>
 </div>
 </div>
@@ -236,18 +236,18 @@ input::placeholder{color:#555}input:disabled{opacity:.5;cursor:not-allowed}
 <div id="tab-history" class="section">
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-<span style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px">&#x1F4DC; &#xDA;ltimos C&#xE1;lculos</span>
-<button class="bicon x" onclick="clearHistory()" title="Borrar">&#x1F5D1;&#xFE0F;</button>
+<span style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px">📜 Últimos Cálculos</span>
+<button class="bicon x" onclick="clearHistory()" title="Borrar">🗑️</button>
 </div>
-<div class="hlist" id="historyList"><div class="empty"><div class="icon">&#x1F4CB;</div><h3>Sin historial</h3><p>Los c&#xE1;lculos aparecer&#xE1;n aqu&#xED;</p></div></div>
+<div class="hlist" id="historyList"><div class="empty"><div class="icon">📋</div><h3>Sin historial</h3><p>Los cálculos aparecerán aquí</p></div></div>
 </div>
 </div>
 </div>
 
-<div class="modal" id="editModal"><div class="mdl"><h2>&#x270F;&#xFE0F; Editar Tornillo</h2><div class="form-group"><label>Nombre</label><input type="text" id="editName"></div><div class="form-group"><label>Peso 100u (g)</label><input type="number" id="editWeight" step=".01" min="0"></div><div class="mact"><button class="btn btn-n" onclick="closeEditModal()">Cancelar</button><button class="btn btn-p" onclick="saveEdit()">Guardar</button></div></div></div>
+<div class="modal" id="editModal"><div class="mdl"><h2>✏️ Editar Tornillo</h2><div class="form-group"><label>Nombre</label><input type="text" id="editName"></div><div class="form-group"><label>Peso 100u (g)</label><input type="number" id="editWeight" step=".01" min="0"></div><div class="mact"><button class="btn btn-n" onclick="closeEditModal()">Cancelar</button><button class="btn btn-p" onclick="saveEdit()">Guardar</button></div></div></div>
 
 <div class="toast" id="toast"></div>
-<div class="ft">RIOS v2.0 &#x2022; Sync via ExtendsClass</div>
+<div class="ft">RIOS v2.0 • Sync via ExtendsClass</div>
 
 <script>
 // Sync via ExtendsClass JSON Storage
@@ -267,7 +267,7 @@ let currentSearchIndex=-1;
 let networkListenersAdded=false;
 
 // =========================
-// INICIALIZACI&#xD3;N
+// INICIALIZACIÓN
 // =========================
 function init(){
     try{
@@ -340,7 +340,7 @@ function renderSearchDropdown(query){
     let dd=document.getElementById('searchDropdown');
     if(!currentSearch.length){
         let currentVal=document.getElementById('calcSearchInput').value;
-        dd.innerHTML='<div class="ns"><div style="margin-bottom:8px">&#x1F529; No encontrado</div><div style="font-size:.8rem">Escrib&#xED; el nombre completo para agregarlo</div></div><div class="nb" onclick="showNewScrewForm()">&#x2795; Agregar "'+escapeHtml(currentVal)+'"</div>';
+        dd.innerHTML='<div class="ns"><div style="margin-bottom:8px">🔩 No encontrado</div><div style="font-size:.8rem">Escribí el nombre completo para agregarlo</div></div><div class="nb" onclick="showNewScrewForm()">➕ Agregar "'+escapeHtml(currentVal)+'"</div>';
         dd.style.display='block';
         return;
     }
@@ -363,7 +363,7 @@ function selectSearchResult(idx){
     document.getElementById('selectedScrewInfo').style.display='flex';
     document.getElementById('newScrewForm').style.display='none';
     enableStep2();
-    toast('&#x2705; '+s.name+' seleccionado');
+    toast('✅ '+s.name+' seleccionado');
 }
 
 function highlightSearchItem(idx){
@@ -448,7 +448,7 @@ function showNewScrewForm(){
 async function saveNewScrewCalc(){
     let n=document.getElementById('newCalcName').value.trim();
     let w=parseFloat(document.getElementById('newCalcWeight').value);
-    if(!n || !w || w<=0){ toast('Complet&#xE1; nombre y peso','e'); return; }
+    if(!n || !w || w<=0){ toast('Completá nombre y peso','e'); return; }
     let exists=screws.findIndex(x=>x.name.toLowerCase()===n.toLowerCase());
     if(exists>=0){
         toast('Ese tornillo ya existe','w');
@@ -459,7 +459,7 @@ async function saveNewScrewCalc(){
         saveLocal();
         selectedScrew={screw:ns,index:screws.length-1};
         if(syncData) await pushToCloud();
-        toast('Tornillo guardado &#x2705;');
+        toast('Tornillo guardado ✅');
     }
     document.getElementById('selScrewName').textContent=selectedScrew.screw.name;
     document.getElementById('selScrewWeight').textContent=selectedScrew.screw.weight100+'g cada 100 unidades';
@@ -471,7 +471,7 @@ async function saveNewScrewCalc(){
 }
 
 // =========================
-// PASO 2: CANTIDAD + C&#xC1;LCULO
+// PASO 2: CANTIDAD + CÁLCULO
 // =========================
 function enableStep2(){
     document.getElementById('step2').classList.add('on');
@@ -507,7 +507,7 @@ function calc(){
     }
     document.getElementById('resValue').textContent=displayVal;
     document.getElementById('resUnit').textContent=displayUnit;
-    document.getElementById('resDetail').textContent=q+' unidades &#xD7; '+unitWeight.toFixed(3)+'g c/u = '+totalWeight.toFixed(2)+'g total';
+    document.getElementById('resDetail').textContent=q+' unidades × '+unitWeight.toFixed(3)+'g c/u = '+totalWeight.toFixed(2)+'g total';
     r.classList.add('on');
     addToHistory(selectedScrew.screw.name,q,totalWeight);
 }
@@ -528,17 +528,17 @@ function renderScrewList(){
     document.getElementById('screwCountBadge').textContent=screws.length;
     document.getElementById('totalScrews').textContent=screws.length;
     if(!filtered.length){
-        listEl.innerHTML='<div class="empty"><div class="icon">&#x1F529;</div><h3>'+(screws.length===0?'No hay tornillos guardados':'No se encontraron resultados')+'</h3><p>'+(screws.length===0?'Agreg&#xE1; tu primer tornillo para empezar':'Prob&#xE1; con otra b&#xFA;squeda')+'</p></div>';
+        listEl.innerHTML='<div class="empty"><div class="icon">🔩</div><h3>'+(screws.length===0?'No hay tornillos guardados':'No se encontraron resultados')+'</h3><p>'+(screws.length===0?'Agregá tu primer tornillo para empezar':'Probá con otra búsqueda')+'</p></div>';
         return;
     }
     listEl.innerHTML=filtered.map((x,i)=>{
         let origIdx=screws.indexOf(x);
         return '<div class="sitem">'+
-            '<div class="sinfo"><h3>'+escapeHtml(x.name)+'</h3><p>'+x.weight100+'g cada 100u &#x2022; '+(x.weight100/100).toFixed(3)+'g c/u</p></div>'+
+            '<div class="sinfo"><h3>'+escapeHtml(x.name)+'</h3><p>'+x.weight100+'g cada 100u • '+(x.weight100/100).toFixed(3)+'g c/u</p></div>'+
             '<div class="sact">'+
-            '<button class="bicon u" onclick="useScrew('+origIdx+')" title="Usar">&#x2696;&#xFE0F;</button>'+
-            '<button class="bicon e" onclick="openEdit('+origIdx+')" title="Editar">&#x270F;&#xFE0F;</button>'+
-            '<button class="bicon x" onclick="deleteScrew('+origIdx+')" title="Eliminar">&#x1F5D1;&#xFE0F;</button>'+
+            '<button class="bicon u" onclick="useScrew('+origIdx+')" title="Usar">⚖️</button>'+
+            '<button class="bicon e" onclick="openEdit('+origIdx+')" title="Editar">✏️</button>'+
+            '<button class="bicon x" onclick="deleteScrew('+origIdx+')" title="Eliminar">🗑️</button>'+
             '</div></div>';
     }).join('');
 }
@@ -556,20 +556,20 @@ function useScrew(idx){
     document.getElementById('newScrewForm').style.display='none';
     document.getElementById('clearSearchBtn').style.display='block';
     enableStep2();
-    toast('&#x2705; '+s.name+' listo');
+    toast('✅ '+s.name+' listo');
 }
 
 async function addScrew(){
     let n=document.getElementById('newScrewName').value.trim();
     let w=parseFloat(document.getElementById('newScrewWeight100').value);
-    if(!n || !w || w<=0){ toast('Complet&#xE1; todos los campos','e'); return; }
+    if(!n || !w || w<=0){ toast('Completá todos los campos','e'); return; }
     screws.push({name:n,weight100:w,created:new Date().toISOString(),updated:new Date().toISOString()});
     saveLocal();
     document.getElementById('newScrewName').value='';
     document.getElementById('newScrewWeight100').value='';
     renderScrewList();
     updateStats();
-    toast('Tornillo agregado &#x2705;');
+    toast('Tornillo agregado ✅');
     if(syncData) await pushToCloud();
 }
 
@@ -588,18 +588,18 @@ async function saveEdit(){
     if(editIndex<0) return;
     let n=document.getElementById('editName').value.trim();
     let w=parseFloat(document.getElementById('editWeight').value);
-    if(!n || !w || w<=0){ toast('Datos inv&#xE1;lidos','e'); return; }
+    if(!n || !w || w<=0){ toast('Datos inválidos','e'); return; }
     screws[editIndex].name=n;
     screws[editIndex].weight100=w;
     screws[editIndex].updated=new Date().toISOString();
     saveLocal();
     renderScrewList();
     closeEditModal();
-    toast('Tornillo actualizado &#x2705;');
+    toast('Tornillo actualizado ✅');
     if(syncData) await pushToCloud();
 }
 async function deleteScrew(idx){
-    if(!confirm('&#xBF;Eliminar "'+screws[idx].name+'"?')) return;
+    if(!confirm('¿Eliminar "'+screws[idx].name+'"?')) return;
     screws.splice(idx,1);
     saveLocal();
     renderScrewList();
@@ -614,7 +614,7 @@ async function deleteScrew(idx){
 function renderHistory(){
     let listEl=document.getElementById('historyList');
     if(!history.length){
-        listEl.innerHTML='<div class="empty"><div class="icon">&#x1F4CB;</div><h3>Sin historial</h3><p>Los c&#xE1;lculos aparecer&#xE1;n aqu&#xED;</p></div>';
+        listEl.innerHTML='<div class="empty"><div class="icon">📋</div><h3>Sin historial</h3><p>Los cálculos aparecerán aquí</p></div>';
         return;
     }
     let today=new Date().toDateString();
@@ -626,12 +626,12 @@ function renderHistory(){
         let ws=h.weight>=1000 ? (h.weight/1000).toFixed(3)+' kg' : h.weight.toFixed(2)+' g';
         return '<div class="hitem">'+
             '<div><div style="font-weight:600">'+escapeHtml(h.name)+'</div>'+
-            '<div style="color:var(--tl);font-size:.8rem">'+h.qty+' unidades &#x2192; '+ws+'</div></div>'+
+            '<div style="color:var(--tl);font-size:.8rem">'+h.qty+' unidades → '+ws+'</div></div>'+
             '<div class="time">'+ds+'<br>'+ts+'</div></div>';
     }).join('');
 }
 function clearHistory(){
-    if(!confirm('&#xBF;Borrar todo el historial?')) return;
+    if(!confirm('¿Borrar todo el historial?')) return;
     history=[];
     saveLocal();
     renderHistory();
@@ -661,11 +661,11 @@ function cleanSyncData(){
 }
 
 async function createNewSync(){
-    toast('Creando sincronizaci&#xF3;n...','i');
+    toast('Creando sincronización...','i');
     try{
         let data=cleanSyncData();
         let body=JSON.stringify(data);
-        if(body.length>500000){ toast('Datos muy grandes. Borr&#xE1; historial viejo.','e'); return; }
+        if(body.length>500000){ toast('Datos muy grandes. Borrá historial viejo.','e'); return; }
         let r=await fetch(EC_API,{method:'POST',headers:{'Content-Type':'application/json','Api-key':EC_KEY},body:body});
         if(!r.ok){
             let txt=await r.text().catch(()=>'');
@@ -678,7 +678,7 @@ async function createNewSync(){
         saveSyncData();
         updateSyncUI();
         setupAutoSync();
-        toast('&#xA1;Sincronizaci&#xF3;n creada!','s');
+        toast('¡Sincronización creada!','s');
     }catch(e){
         console.error('Sync error:',e);
         toast('Error: '+e.message,'e');
@@ -687,15 +687,15 @@ async function createNewSync(){
 
 async function joinSync(){
     let c=document.getElementById('joinCodeInput').value.trim();
-    if(!c || c.length<3){ toast('Ingres&#xE1; un c&#xF3;digo v&#xE1;lido','e'); return; }
+    if(!c || c.length<3){ toast('Ingresá un código válido','e'); return; }
     toast('Buscando...','i');
     try{
         let r=await fetch(ecUrl(c));
-        if(!r.ok){ toast('C&#xF3;digo no encontrado','e'); return; }
+        if(!r.ok){ toast('Código no encontrado','e'); return; }
         let rd=await r.json();
-        if(!rd.screws || !Array.isArray(rd.screws)){ toast('Datos inv&#xE1;lidos','e'); return; }
+        if(!rd.screws || !Array.isArray(rd.screws)){ toast('Datos inválidos','e'); return; }
         if(screws.length>0 && rd.screws.length>0){
-            if(confirm('&#xBF;Reemplazar tus '+screws.length+' tornillos por los '+rd.screws.length+' remotos?')){
+            if(confirm('¿Reemplazar tus '+screws.length+' tornillos por los '+rd.screws.length+' remotos?')){
                 screws=rd.screws;
             }else{
                 rd.screws.forEach(rs=>{
@@ -712,7 +712,7 @@ async function joinSync(){
         updateSyncUI();
         renderScrewList();
         setupAutoSync();
-        toast('&#xA1;Conectado! '+screws.length+' tornillos','s');
+        toast('¡Conectado! '+screws.length+' tornillos','s');
     }catch(e){
         console.error('Join error:',e);
         toast('Error: '+e.message,'e');
@@ -767,12 +767,12 @@ function setupAutoSync(){
 }
 
 function disconnectSync(){
-    if(!confirm('&#xBF;Desconectar sincronizaci&#xF3;n?')) return;
+    if(!confirm('¿Desconectar sincronización?')) return;
     if(syncIntervalId) clearInterval(syncIntervalId);
     syncData=null;
     saveSyncData();
     updateSyncUI();
-    toast('Sincronizaci&#xF3;n desconectada');
+    toast('Sincronización desconectada');
 }
 
 function updateSyncUI(){
@@ -790,11 +790,11 @@ function updateSyncUI(){
 
 function copySyncCode(){
     if(!syncData) return;
-    navigator.clipboard.writeText(syncData.code).then(()=>toast('C&#xF3;digo copiado'));
+    navigator.clipboard.writeText(syncData.code).then(()=>toast('Código copiado'));
 }
 function shareWhatsApp(){
     if(!syncData) return;
-    let t='Unite a mi RIOS con el c&#xF3;digo: *'+syncData.code+'*\n\n'+window.location.href;
+    let t='Unite a mi RIOS con el código: *'+syncData.code+'*\n\n'+window.location.href;
     window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 
@@ -810,7 +810,7 @@ function exportData(){
     a.download='rios-backup-'+new Date().toISOString().slice(0,10)+'.json';
     a.click();
     URL.revokeObjectURL(u);
-    toast('Backup descargado &#x2705;');
+    toast('Backup descargado ✅');
 }
 function importData(inp){
     let f=inp.files[0];
@@ -821,7 +821,7 @@ function importData(inp){
             let d=JSON.parse(e.target.result);
             if(d.screws){
                 if(screws.length>0){
-                    if(confirm('&#xBF;Reemplazar tus '+screws.length+' tornillos por los '+d.screws.length+' del archivo?')){
+                    if(confirm('¿Reemplazar tus '+screws.length+' tornillos por los '+d.screws.length+' del archivo?')){
                         screws=d.screws;
                     }else{
                         d.screws.forEach(ds=>{
@@ -835,7 +835,7 @@ function importData(inp){
             if(d.history) history=d.history;
             saveLocal();
             renderScrewList();
-            toast('Importados '+screws.length+' tornillos &#x2705;');
+            toast('Importados '+screws.length+' tornillos ✅');
             if(syncData) pushToCloud();
         }catch(err){
             toast('Error al importar','e');

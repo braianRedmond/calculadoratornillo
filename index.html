@@ -247,10 +247,10 @@ input::placeholder{color:#555}input:disabled{opacity:.5;cursor:not-allowed}
 <div class="modal" id="editModal"><div class="mdl"><h2>&#x270F;&#xFE0F; Editar Tornillo</h2><div class="form-group"><label>Nombre</label><input type="text" id="editName"></div><div class="form-group"><label>Peso 100u (g)</label><input type="number" id="editWeight" step=".01" min="0"></div><div class="mact"><button class="btn btn-n" onclick="closeEditModal()">Cancelar</button><button class="btn btn-p" onclick="saveEdit()">Guardar</button></div></div></div>
 
 <div class="toast" id="toast"></div>
-<div class="ft">RIOS v2.0 &#x2022; Sync via JSONStorage.net</div>
+<div class="ft">RIOS v2.0 &#x2022; Sync via ExtendsClass</div>
 
 <script>
-const JS_API='https://api.jsonstorage.net/v1/json';
+// Sync via ExtendsClass JSON Storage
 const SK='calcpesa_screws';
 const HK='calcpesa_history';
 const YK='calcpesa_sync';
@@ -644,8 +644,12 @@ function updateStats(){
 }
 
 // =========================
-// SYNC - JSONStorage.net
+// SYNC - ExtendsClass JSON Storage
 // =========================
+const EC_API='https://json.extendsclass.com/bin';
+const EC_KEY='6e00dbd8-5454-11f1-bb34-0242ac110002';
+
+function ecUrl(id){ return EC_API+'/'+id; }
 function cleanSyncData(){
     let cleanScrew=s=>{return{name:String(s.name||''),weight100:parseFloat(s.weight100)||0,created:String(s.created||new Date().toISOString()),updated:String(s.updated||new Date().toISOString())};};
     let cleanHist=h=>{return{name:String(h.name||''),qty:parseInt(h.qty)||0,weight:parseFloat(h.weight)||0,time:String(h.time||new Date().toISOString())};};
@@ -662,16 +666,15 @@ async function createNewSync(){
         let data=cleanSyncData();
         let body=JSON.stringify(data);
         if(body.length>500000){ toast('Datos muy grandes. Borr&#xE1; historial viejo.','e'); return; }
-        let r=await fetch(JS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:body});
+        let r=await fetch(EC_API,{method:'POST',headers:{'Content-Type':'application/json','Api-key':EC_KEY},body:body});
         if(!r.ok){
-            let txt=await r.text().catch(()=>'').catch(()=>'');
-            console.error('JSONStorage 400 response:',txt.substring(0,500));
-            throw new Error('HTTP '+r.status+' - '+txt.substring(0,200));
+            let txt=await r.text().catch(()=>'');
+            console.error('ExtendsClass error:',r.status,txt.substring(0,300));
+            throw new Error('HTTP '+r.status);
         }
         let result=await r.json();
-        if(!result.uri) throw new Error('No URI en respuesta');
-        let code=result.uri.replace('https://api.jsonstorage.net/v1/json/','');
-        syncData={code:code,uri:result.uri,createdAt:new Date().toISOString()};
+        if(!result.id) throw new Error('No ID en respuesta');
+        syncData={code:result.id,createdAt:new Date().toISOString()};
         saveSyncData();
         updateSyncUI();
         setupAutoSync();
@@ -687,8 +690,7 @@ async function joinSync(){
     if(!c || c.length<3){ toast('Ingres&#xE1; un c&#xF3;digo v&#xE1;lido','e'); return; }
     toast('Buscando...','i');
     try{
-        let uri=JS_API+'/'+c;
-        let r=await fetch(uri);
+        let r=await fetch(ecUrl(c));
         if(!r.ok){ toast('C&#xF3;digo no encontrado','e'); return; }
         let rd=await r.json();
         if(!rd.screws || !Array.isArray(rd.screws)){ toast('Datos inv&#xE1;lidos','e'); return; }
@@ -704,7 +706,7 @@ async function joinSync(){
             screws=rd.screws;
         }
         if(rd.history) history=rd.history;
-        syncData={code:c,uri:uri,joinedAt:new Date().toISOString()};
+        syncData={code:c,joinedAt:new Date().toISOString()};
         saveLocal();
         saveSyncData();
         updateSyncUI();
@@ -718,20 +720,20 @@ async function joinSync(){
 }
 
 async function pushToCloud(){
-    if(!syncData || !syncData.uri) return;
+    if(!syncData || !syncData.code) return;
     try{
         let data=cleanSyncData();
         let body=JSON.stringify(data);
         if(body.length>500000) return;
-        let r=await fetch(syncData.uri,{method:'PUT',headers:{'Content-Type':'application/json'},body:body});
+        let r=await fetch(ecUrl(syncData.code),{method:'PUT',headers:{'Content-Type':'application/json','Api-key':EC_KEY},body:body});
         if(r.ok) console.log('Sync OK'); else console.log('Sync failed:',r.status);
     }catch(e){ console.error('Push error:',e); }
 }
 
 async function pullFromCloud(){
-    if(!syncData || !syncData.uri) return;
+    if(!syncData || !syncData.code) return;
     try{
-        let r=await fetch(syncData.uri);
+        let r=await fetch(ecUrl(syncData.code));
         if(!r.ok) return;
         let rd=await r.json();
         if(rd.screws && Array.isArray(rd.screws)){
@@ -746,7 +748,7 @@ async function pullFromCloud(){
             saveLocal();
             renderScrewList();
         }
-    }catch(e){ console.error('Pull error:',e); }
+    }catch(e){ console.error('Pull error',e); }
 }
 
 function setupAutoSync(){

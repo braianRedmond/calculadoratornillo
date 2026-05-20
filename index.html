@@ -1,981 +1,327 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RIOS - Calculadora de Tornillos</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚙️%3C/text%3E%3C/svg%3E">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root {
-            --primary: #ff6b00; --primary-dark: #e55a00; --success: #00e676;
-            --danger: #ff1744; --warning: #ffea00; --info: #00b0ff;
-            --bg: #000000; --card: #111111; --text: #ffffff;
-            --text-light: #888888; --border: #333333;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.8), 0 2px 4px -1px rgba(0,0,0,0.6);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.8), 0 4px 6px -2px rgba(0,0,0,0.7);
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
-        .header { background: #000; color: var(--primary); padding: 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); border-bottom: 4px solid var(--primary); }
-        .header h1 { text-shadow: 0 0 20px rgba(255,107,0,0.5); letter-spacing: 2px; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .header p { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
-        .sync-status { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; background: rgba(249,115,22,0.2); border: 1px solid var(--primary); display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        .sync-status.online { background: rgba(34,197,94,0.2); border-color: var(--success); }
-        .sync-status.offline { background: rgba(239,68,68,0.2); border-color: var(--danger); }
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #0a0a0a; padding: 6px; border-radius: 12px; box-shadow: var(--shadow); border: 2px solid var(--border); }
-        .tab { flex: 1; padding: 12px 8px; border: none; background: transparent; color: var(--text-light); font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: center; }
-        .tab.active { background: var(--primary); color: #000; box-shadow: 0 0 15px rgba(255,107,0,0.4); font-weight: 800; }
-        .tab:active { transform: scale(0.98); }
-        .section { display: none; }
-        .section.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-        .step-indicator { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
-        .step-number { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(255,107,0,0.3); }
-        .step-label { font-size: 1.1rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
-        #step2Card { opacity: 0.4; pointer-events: none; transition: all 0.3s; filter: grayscale(0.5); }
-        #step2Card.active { opacity: 1; pointer-events: all; border-color: var(--primary); box-shadow: 0 0 20px rgba(255,107,0,0.1); filter: grayscale(0); }
-        #step2Card.active .step-number { background: var(--success); box-shadow: 0 0 15px rgba(0,230,118,0.3); }
-        #step2Card.active .step-label { color: var(--success); }
-        .form-group { margin-bottom: 16px; }
-        label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        input, select { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; font-family: inherit; background: #000; color: var(--text); transition: all 0.2s; -webkit-appearance: none; font-weight: 500; }
-        input:focus, select:focus { outline: none; border-color: var(--primary); background: #000; box-shadow: 0 0 0 4px rgba(255,107,0,0.25), 0 0 20px rgba(255,107,0,0.1); }
-        input::placeholder { color: #555; }
-        input:disabled { opacity: 0.5; cursor: not-allowed; }
-        .input-hint { font-size: 0.8rem; color: var(--text); margin-top: 4px; opacity: 0.7; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: #000; box-shadow: 0 0 20px rgba(255,107,0,0.3); font-weight: 800; }
-        .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 0 30px rgba(255,107,0,0.5); }
-        .btn-success { background: var(--success); color: #000; box-shadow: 0 0 20px rgba(0,230,118,0.3); font-weight: 800; }
-        .btn-danger { background: var(--danger); color: #000; box-shadow: 0 0 20px rgba(255,23,68,0.3); font-weight: 800; }
-        .btn-warning { background: var(--warning); color: #000; box-shadow: 0 0 20px rgba(255,234,0,0.3); font-weight: 800; }
-        .btn-secondary { background: #1a1a1a; color: var(--text); border: 2px solid var(--border); font-weight: 700; }
-        .btn-info { background: var(--info); color: #000; font-weight: 800; }
-        .result-card { background: linear-gradient(135deg, #000 0%, #0a0a0a 100%); color: var(--primary); border-radius: 16px; padding: 24px; margin-top: 20px; text-align: center; box-shadow: 0 0 30px rgba(255,107,0,0.3); border: 3px solid var(--primary); display: none; }
-        .result-card.show { display: block; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .result-label { font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; font-weight: 700; }
-        .result-value { font-size: 2.5rem; font-weight: 800; margin-bottom: 4px; color: var(--primary); text-shadow: 0 0 20px rgba(255,107,0,0.6); }
-        .result-unit { font-size: 1rem; color: var(--text); font-weight: 600; }
-        .result-detail { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--primary); font-size: 0.9rem; color: var(--text); font-weight: 500; }
-        .quick-calc { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
-        .quick-btn { padding: 14px 8px; border: 2px solid var(--border); border-radius: 10px; background: #0a0a0a; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; color: var(--text); }
-        .quick-btn:hover { border-color: var(--primary); background: #1a1a1a; color: var(--primary); box-shadow: 0 0 15px rgba(255,107,0,0.2); }
-        .quick-btn:active { transform: scale(0.95); }
-        .quick-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: var(--border); color: var(--text-light); }
-        .search-predictive { position: relative; }
-        .search-predictive input { font-size: 1.1rem; font-weight: 500; }
-        .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #000; border: 3px solid var(--primary); border-top: none; border-radius: 0 0 12px 12px; max-height: 280px; overflow-y: auto; z-index: 50; box-shadow: 0 0 30px rgba(255,107,0,0.2); margin-top: -4px; padding-top: 4px; }
-        .suggestion-item { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s; border-bottom: 1px solid var(--border); }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #1a1a1a; border-left: 3px solid var(--primary); }
-        .suggestion-item.selected { background: var(--primary); color: #000; border-left: 3px solid var(--primary); }
-        .suggestion-item.selected .suggestion-meta { color: rgba(0,0,0,0.7); font-weight: 700; }
-        .suggestion-text { font-weight: 700; font-size: 0.95rem; color: var(--text); }
-        .suggestion-meta { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
-        .suggestion-highlight { background: rgba(255,107,0,0.4); border-radius: 2px; font-weight: 800; color: var(--primary); }
-        .suggestion-item.selected .suggestion-highlight { background: rgba(0,0,0,0.2); color: #000; }
-        .no-suggestions { padding: 16px; text-align: center; color: var(--text); font-size: 0.9rem; background: #000; font-weight: 600; }
-        .no-suggestions-btn { padding: 12px 16px; text-align: center; cursor: pointer; color: var(--primary); font-weight: 700; border-top: 1px solid var(--border); transition: all 0.2s; background: #0a0a0a; }
-        .no-suggestions-btn:hover { background: rgba(255,107,0,0.1); }
-        .selected-screw-box { margin-top: 16px; padding: 14px; background: #0a0a0a; border-radius: 10px; border: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .selected-screw-name { font-weight: 700; color: var(--primary); font-size: 1rem; }
-        .selected-screw-weight { font-size: 0.85rem; color: var(--text); margin-top: 2px; }
-        .screw-list { display: flex; flex-direction: column; gap: 12px; }
-        .screw-item { background: #0a0a0a; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; border: 2px solid var(--border); }
-        .screw-item:hover { border-color: var(--primary); transform: translateX(4px); background: #1a1a1a; box-shadow: 0 0 15px rgba(255,107,0,0.15); }
-        .screw-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--text); }
-        .screw-info p { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
-        .screw-actions { display: flex; gap: 8px; }
-        .btn-icon { width: 40px; height: 40px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s; }
-        .btn-icon:active { transform: scale(0.9); }
-        .btn-icon.edit { background: rgba(255,107,0,0.15); color: var(--primary); border: 1px solid var(--primary); }
-        .btn-icon.delete { background: rgba(255,23,68,0.15); color: var(--danger); border: 1px solid var(--danger); }
-        .btn-icon.use { background: rgba(0,230,118,0.15); color: var(--success); border: 1px solid var(--success); }
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text); }
-        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
-        .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--primary); font-weight: 700; }
-        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: #000; color: var(--text); padding: 16px 28px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; z-index: 1000; opacity: 0; transition: all 0.3s ease; box-shadow: 0 0 30px rgba(255,107,0,0.3); white-space: nowrap; max-width: 90vw; text-align: center; border: 2px solid var(--primary); }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .toast.success { background: #000; border-color: var(--success); color: var(--success); box-shadow: 0 0 30px rgba(0,230,118,0.3); }
-        .toast.error { background: #000; border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255,23,68,0.3); }
-        .toast.warning { background: #000; border-color: var(--warning); color: var(--warning); box-shadow: 0 0 30px rgba(255,234,0,0.3); }
-        .toast.info { background: #000; border-color: var(--info); color: var(--info); box-shadow: 0 0 30px rgba(0,176,255,0.3); }
-        .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
-        .history-item { background: #0a0a0a; border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; border: 1px solid var(--border); }
-        .history-item .time { color: var(--text-light); font-size: 0.8rem; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
-        .modal-overlay.show { display: flex; }
-        .modal { background: #000; border-radius: 20px; padding: 24px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.3s ease; border: 3px solid var(--primary); box-shadow: 0 0 40px rgba(255,107,0,0.2); }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        .modal h2 { margin-bottom: 20px; font-size: 1.3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
-        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
-        .modal-actions .btn { flex: 1; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .stat-box { background: #0a0a0a; border-radius: 12px; padding: 16px; text-align: center; border: 2px solid var(--primary); }
-        .stat-box .number { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
-        .stat-box .label { font-size: 0.8rem; color: var(--text); margin-top: 4px; font-weight: 600; }
-        .sync-panel { background: linear-gradient(135deg, #000 0%, #0a0a0a 100%); color: var(--text); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 3px solid var(--primary); box-shadow: 0 0 30px rgba(255,107,0,0.15); }
-        .sync-panel h3 { font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .sync-code { background: #000; border-radius: 10px; padding: 12px; font-family: 'Courier New', monospace; font-size: 1.2rem; text-align: center; letter-spacing: 2px; margin: 12px 0; word-break: break-all; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; text-shadow: 0 0 10px rgba(255,107,0,0.5); }
-        .sync-actions { display: flex; gap: 8px; margin-top: 12px; }
-        .sync-actions .btn { flex: 1; padding: 10px; font-size: 0.85rem; }
-        .info-box { background: #0a0a0a; border-left: 4px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text); font-weight: 500; }
-        .info-box.warning { background: #0a0a0a; border-left-color: var(--warning); }
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .badge-primary { background: rgba(255,107,0,0.15); color: var(--primary); border: 1px solid var(--primary); }
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #000; padding: 12px 20px; text-align: center; font-size: 0.75rem; color: var(--primary); border-top: 2px solid var(--primary); z-index: 50; font-weight: 700; }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,107,0,0.3); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 400px) { .header h1 { font-size: 1.2rem; } .result-value { font-size: 2rem; } .quick-calc { grid-template-columns: 1fr 1fr; } .sync-actions { flex-direction: column; } }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RIOS - Calculadora de Tornillos</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--p:#ff6b00;--pd:#e55a00;--s:#00e676;--d:#ff1744;--w:#ffea00;--i:#00b0ff;--bg:#000;--c:#111;--t:#fff;--tl:#888;--b:#333}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;padding-bottom:80px}
+.header{background:#000;color:var(--p);padding:20px;text-align:center;position:sticky;top:0;z-index:100;border-bottom:4px solid var(--p)}
+.header h1{text-shadow:0 0 20px rgba(255,107,0,0.5);letter-spacing:2px;font-size:1.5rem;font-weight:700}
+.header p{font-size:.85rem;color:var(--tl);margin-top:4px}
+.container{max-width:600px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:8px;margin-bottom:20px;background:#0a0a0a;padding:6px;border-radius:12px;border:2px solid var(--b)}
+.tab{flex:1;padding:12px 8px;border:none;background:transparent;color:var(--tl);font-size:.9rem;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;text-align:center}
+.tab.active{background:var(--p);color:#000;box-shadow:0 0 15px rgba(255,107,0,.4);font-weight:800}
+.section{display:none}.section.active{display:block;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--c);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid var(--b)}
+.step-indicator{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--b)}
+.step-number{width:36px;height:36px;border-radius:50%;background:var(--p);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;box-shadow:0 0 15px rgba(255,107,0,.3)}
+.step-label{font-size:1.1rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px}
+#step2{opacity:.4;pointer-events:none;transition:all .3s;filter:grayscale(.5)}
+#step2.on{opacity:1;pointer-events:all;border-color:var(--p);box-shadow:0 0 20px rgba(255,107,0,.1);filter:grayscale(0)}
+#step2.on .step-number{background:var(--s);box-shadow:0 0 15px rgba(0,230,118,.3)}
+#step2.on .step-label{color:var(--s)}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:.85rem;font-weight:700;color:var(--p);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+input{width:100%;padding:14px 16px;border:2px solid var(--b);border-radius:12px;font-size:1rem;font-family:inherit;background:#000;color:var(--t);font-weight:500}
+input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(255,107,0,.25),0 0 20px rgba(255,107,0,.1)}
+input::placeholder{color:#555}input:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:.8rem;color:var(--t);margin-top:4px;opacity:.7}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.98)}
+.btn-p{background:var(--p);color:#000;box-shadow:0 0 20px rgba(255,107,0,.3);font-weight:800}
+.btn-p:hover{background:var(--pd);box-shadow:0 0 30px rgba(255,107,0,.5)}
+.btn-s{background:var(--s);color:#000;box-shadow:0 0 20px rgba(0,230,118,.3);font-weight:800}
+.btn-d{background:var(--d);color:#000;box-shadow:0 0 20px rgba(255,23,68,.3);font-weight:800}
+.btn-w{background:var(--w);color:#000;box-shadow:0 0 20px rgba(255,234,0,.3);font-weight:800}
+.btn-n{background:#1a1a1a;color:var(--t);border:2px solid var(--b);font-weight:700}
+.btn-i{background:var(--i);color:#000;font-weight:800}
+.res{background:linear-gradient(135deg,#000 0%,#0a0a0a 100%);color:var(--p);border-radius:16px;padding:24px;margin-top:20px;text-align:center;box-shadow:0 0 30px rgba(255,107,0,.3);border:3px solid var(--p);display:none}
+.res.on{display:block;animation:su .4s ease}
+@keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.res-l{font-size:.85rem;color:var(--p);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-weight:700}
+.res-v{font-size:2.5rem;font-weight:800;margin-bottom:4px;color:var(--p);text-shadow:0 0 20px rgba(255,107,0,.6)}
+.res-u{font-size:1rem;color:var(--t);font-weight:600}
+.res-d{margin-top:16px;padding-top:16px;border-top:2px solid var(--p);font-size:.9rem;color:var(--t);font-weight:500}
+.qc{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:16px}
+.qb{padding:14px 8px;border:2px solid var(--b);border-radius:10px;background:#0a0a0a;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;color:var(--t)}
+.qb:hover{border-color:var(--p);background:#1a1a1a;color:var(--p);box-shadow:0 0 15px rgba(255,107,0,.2)}
+.qb:disabled{opacity:.2;cursor:not-allowed;border-color:var(--b);color:var(--tl)}
+.sp{position:relative}.sp input{font-size:1.1rem;font-weight:500}
+.sd{position:absolute;top:100%;left:0;right:0;background:#000;border:3px solid var(--p);border-top:none;border-radius:0 0 12px 12px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 0 30px rgba(255,107,0,.2);margin-top:-4px;padding-top:4px}
+.si{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;border-bottom:1px solid var(--b)}
+.si:last-child{border-bottom:none}.si:hover{background:#1a1a1a;border-left:3px solid var(--p)}
+.si.sel{background:var(--p);color:#000;border-left:3px solid var(--p)}
+.si.sel .sm{color:rgba(0,0,0,.7);font-weight:700}
+.st{font-weight:700;font-size:.95rem;color:var(--t)}
+.sm{font-size:.8rem;color:var(--p);font-weight:600}
+.sh{background:rgba(255,107,0,.4);border-radius:2px;font-weight:800;color:var(--p)}
+.si.sel .sh{background:rgba(0,0,0,.2);color:#000}
+.ns{padding:16px;text-align:center;color:var(--t);font-size:.9rem;background:#000;font-weight:600}
+.nb{padding:12px 16px;text-align:center;cursor:pointer;color:var(--p);font-weight:700;border-top:1px solid var(--b);transition:all .2s;background:#0a0a0a}
+.nb:hover{background:rgba(255,107,0,.1)}
+.sbox{margin-top:16px;padding:14px;background:#0a0a0a;border-radius:10px;border:2px solid var(--p);display:flex;justify-content:space-between;align-items:center}
+.sname{font-weight:700;color:var(--p);font-size:1rem}
+.sw{font-size:.85rem;color:var(--t);margin-top:2px}
+.slist{display:flex;flex-direction:column;gap:12px}
+.sitem{background:#0a0a0a;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;transition:all .2s;border:2px solid var(--b)}
+.sitem:hover{border-color:var(--p);transform:translateX(4px);background:#1a1a1a;box-shadow:0 0 15px rgba(255,107,0,.15)}
+.sinfo h3{font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--t)}
+.sinfo p{font-size:.85rem;color:var(--p);font-weight:600}
+.sact{display:flex;gap:8px}
+.bicon{width:40px;height:40px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .2s}
+.bicon:active{transform:scale(.9)}
+.bicon.e{background:rgba(255,107,0,.15);color:var(--p);border:1px solid var(--p)}
+.bicon.x{background:rgba(255,23,68,.15);color:var(--d);border:1px solid var(--d)}
+.bicon.u{background:rgba(0,230,118,.15);color:var(--s);border:1px solid var(--s)}
+.empty{text-align:center;padding:40px 20px;color:var(--t)}
+.empty .icon{font-size:3rem;margin-bottom:12px;opacity:.5}
+.empty h3{font-size:1.1rem;margin-bottom:8px;color:var(--p);font-weight:700}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(100px);background:#000;color:var(--t);padding:16px 28px;border-radius:12px;font-weight:700;font-size:.95rem;z-index:1000;opacity:0;transition:all .3s ease;box-shadow:0 0 30px rgba(255,107,0,.3);white-space:nowrap;max-width:90vw;text-align:center;border:2px solid var(--p)}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.s{background:#000;border-color:var(--s);color:var(--s);box-shadow:0 0 30px rgba(0,230,118,.3)}
+.toast.e{background:#000;border-color:var(--d);color:var(--d);box-shadow:0 0 30px rgba(255,23,68,.3)}
+.toast.w{background:#000;border-color:var(--w);color:var(--w);box-shadow:0 0 30px rgba(255,234,0,.3)}
+.hlist{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto}
+.hitem{background:#0a0a0a;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-size:.9rem;border:1px solid var(--b)}
+.hitem .time{color:var(--tl);font-size:.8rem}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal.on{display:flex}
+.mdl{background:#000;border-radius:20px;padding:24px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;animation:mi .3s ease;border:3px solid var(--p);box-shadow:0 0 40px rgba(255,107,0,.2)}
+@keyframes mi{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.mdl h2{margin-bottom:20px;font-size:1.3rem;color:var(--p);text-transform:uppercase;letter-spacing:1px}
+.mact{display:flex;gap:12px;margin-top:20px}.mact .btn{flex:1}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.sbox2{background:#0a0a0a;border-radius:12px;padding:16px;text-align:center;border:2px solid var(--p)}
+.sbox2 .n{font-size:1.8rem;font-weight:800;color:var(--p)}
+.sbox2 .l{font-size:.8rem;color:var(--t);margin-top:4px;font-weight:600}
+.sync{background:linear-gradient(135deg,#000 0%,#0a0a0a 100%);color:var(--t);border-radius:16px;padding:20px;margin-bottom:16px;border:3px solid var(--p);box-shadow:0 0 30px rgba(255,107,0,.15)}
+.sync h3{font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.scode{background:#000;border-radius:10px;padding:12px;font-family:'Courier New',monospace;font-size:1rem;text-align:center;letter-spacing:1px;margin:12px 0;word-break:break-all;border:2px solid var(--p);color:var(--p);font-weight:800;text-shadow:0 0 10px rgba(255,107,0,.5)}
+.sact2{display:flex;gap:8px;margin-top:12px}.sact2 .btn{flex:1;padding:10px;font-size:.85rem}
+.inf{background:#0a0a0a;border-left:4px solid var(--p);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.85rem;color:var(--t);font-weight:500}
+.inf.w{background:#0a0a0a;border-left-color:var(--w)}
+.bad{display:inline-block;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.bad-p{background:rgba(255,107,0,.15);color:var(--p);border:1px solid var(--p)}
+.ft{position:fixed;bottom:0;left:0;right:0;background:#000;padding:12px 20px;text-align:center;font-size:.75rem;color:var(--p);border-top:2px solid var(--p);z-index:50;font-weight:700}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,107,0,.3);border-top-color:var(--p);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:400px){.header h1{font-size:1.2rem}.res-v{font-size:2rem}.qc{grid-template-columns:1fr 1fr}.sact2{flex-direction:column}}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b);border-radius:3px}
+</style>
 <base target="_blank">
 </head>
 <body>
-    <div class="header">
-        <div class="sync-status offline" id="syncStatus" onclick="showSyncModal()">
-            <span id="syncIcon">📴</span>
-            <span id="syncText">Sin sinc.</span>
-        </div>
-        <h1>⚙️ RIOS</h1>
-        <p>Calculadora de peso de tornillos</p>
-    </div>
+<div class="header"><h1>⚙️ RIOS</h1><p>Calculadora de peso de tornillos</p></div>
+<div class="container">
+<div class="tabs">
+<button class="tab active" onclick="st('calc')">🧮 Calcular</button>
+<button class="tab" onclick="st('screws')">📋 Tornillos</button>
+<button class="tab" onclick="st('sync')">🔄 Sync</button>
+<button class="tab" onclick="st('history')">📜 Hist.</button>
+</div>
 
-    <div class="container">
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('calc')">🧮 Calcular</button>
-            <button class="tab" onclick="showTab('screws')">📋 Tornillos</button>
-            <button class="tab" onclick="showTab('sync')">🔄 Sync</button>
-            <button class="tab" onclick="showTab('history')">📜 Hist.</button>
-        </div>
+<div id="tab-calc" class="section active">
+<div class="card">
+<div class="step-indicator"><span class="step-number">1</span><span class="step-label">Buscar Tornillo</span></div>
+<div class="sp" style="position:relative">
+<div style="position:relative">
+<input type="text" id="csi" placeholder="Escribí el nombre o medida..." oninput="csi()" onkeydown="csk(event)" onfocus="csf()" onblur="csb()" autocomplete="off" style="padding-left:44px;padding-right:40px">
+<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">🔍</span>
+<button id="cc" onclick="ccs()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.2rem;cursor:pointer;display:none;padding:4px;color:var(--p)">❌</button>
+</div>
+<div id="csd" class="sd" style="display:none"></div>
+</div>
+<div id="ssi" class="sbox" style="display:none">
+<div><div class="sname" id="ssn">-</div><div class="sw" id="ssw">-</div></div>
+<button class="bicon x" onclick="css()" title="Cambiar">🗑️</button>
+</div>
+<div id="nsf" style="display:none;margin-top:16px">
+<div style="border-top:2px solid var(--b);padding-top:16px">
+<div style="font-size:.85rem;color:var(--p);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">⚡ Tornillo Nuevo</div>
+<div class="form-group"><label>Nombre / Medida</label><input type="text" id="ncn" placeholder="Ej: Tornillo M8 x 40" autocomplete="off"></div>
+<div class="form-group"><label>Peso de 100 unidades (gramos)</label><input type="number" id="ncw" placeholder="Ej: 250" step=".01" min="0"><div class="hint">Pesá 100 tornillos en balanza y anotá el valor</div></div>
+<button class="btn btn-s" onclick="sns()" style="margin-top:8px">💾 Guardar y Usar</button>
+</div>
+</div>
+</div>
 
-        <!-- TAB: CALCULAR -->
-        <div id="tab-calc" class="section active">
-            <div class="card">
-                <div class="step-indicator">
-                    <span class="step-number">1</span>
-                    <span class="step-label">Buscar Tornillo</span>
-                </div>
-                <div class="search-predictive" style="position: relative;">
-                    <div style="position: relative;">
-                        <input type="text" id="calcSearchInput" placeholder="Escribí el nombre o medida..." 
-                               oninput="onCalcSearchInput()" onkeydown="onCalcSearchKeydown(event)" 
-                               onfocus="onCalcSearchFocus()" onblur="onCalcSearchBlur()" 
-                               autocomplete="off" style="padding-left: 44px; padding-right: 40px;">
-                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
-                        <button id="calcClearSearch" onclick="clearCalcSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; display: none; padding: 4px; color: var(--primary);">❌</button>
-                    </div>
-                    <div id="calcSuggestions" class="suggestions-dropdown" style="display: none;"></div>
-                </div>
-                <div id="selectedScrewInfo" class="selected-screw-box" style="display: none;">
-                    <div>
-                        <div class="selected-screw-name" id="selectedScrewName">-</div>
-                        <div class="selected-screw-weight" id="selectedScrewWeight">-</div>
-                    </div>
-                    <button class="btn-icon delete" onclick="clearSelectedScrew()" title="Cambiar">🗑️</button>
-                </div>
-                <div id="newScrewForm" style="display: none; margin-top: 16px;">
-                    <div style="border-top: 2px solid var(--border); padding-top: 16px;">
-                        <div style="font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">⚡ Tornillo Nuevo</div>
-                        <div class="form-group">
-                            <label>Nombre / Medida</label>
-                            <input type="text" id="newCalcScrewName" placeholder="Ej: Tornillo M8 x 40" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label>Peso de 100 unidades (gramos)</label>
-                            <input type="number" id="newCalcWeight100" placeholder="Ej: 250" step="0.01" min="0">
-                            <div class="input-hint">Pesá 100 tornillos en balanza y anotá el valor</div>
-                        </div>
-                        <button class="btn btn-success" onclick="saveNewScrewFromCalc()" style="margin-top: 8px;">💾 Guardar y Usar</button>
-                    </div>
-                </div>
-            </div>
+<div class="card" id="step2">
+<div class="step-indicator"><span class="step-number">2</span><span class="step-label">Cantidad</span></div>
+<div class="form-group"><label>Cantidad de unidades</label><input type="number" id="qty" placeholder="Ej: 50" min="1" step="1" oninput="calc()" disabled></div>
+<div class="qc">
+<button class="qb" onclick="sq(25)" disabled>25</button>
+<button class="qb" onclick="sq(40)" disabled>40</button>
+<button class="qb" onclick="sq(50)" disabled>50</button>
+<button class="qb" onclick="sq(100)" disabled>100</button>
+<button class="qb" onclick="sq(200)" disabled>200</button>
+<button class="qb" onclick="sq(500)" disabled>500</button>
+<button class="qb" onclick="sq(1000)" disabled>1000</button>
+<button class="qb" onclick="sq(2000)" disabled>2000</button>
+</div>
+</div>
 
-            <div class="card" id="step2Card">
-                <div class="step-indicator">
-                    <span class="step-number">2</span>
-                    <span class="step-label">Cantidad</span>
-                </div>
-                <div class="form-group">
-                    <label>Cantidad de unidades</label>
-                    <input type="number" id="quantity" placeholder="Ej: 50" min="1" step="1" oninput="calculate()" disabled>
-                </div>
-                <div class="quick-calc">
-                    <button class="quick-btn" onclick="setQuantity(25)" disabled>25</button>
-                    <button class="quick-btn" onclick="setQuantity(40)" disabled>40</button>
-                    <button class="quick-btn" onclick="setQuantity(50)" disabled>50</button>
-                    <button class="quick-btn" onclick="setQuantity(100)" disabled>100</button>
-                    <button class="quick-btn" onclick="setQuantity(200)" disabled>200</button>
-                    <button class="quick-btn" onclick="setQuantity(500)" disabled>500</button>
-                    <button class="quick-btn" onclick="setQuantity(1000)" disabled>1000</button>
-                    <button class="quick-btn" onclick="setQuantity(2000)" disabled>2000</button>
-                </div>
-            </div>
+<div class="res" id="res">
+<div class="res-l">Peso Estimado</div>
+<div class="res-v" id="rv">0</div>
+<div class="res-u" id="ru">gramos</div>
+<div class="res-d" id="rd">0 unidades × 0g c/u</div>
+</div>
+</div>
 
-            <div class="result-card" id="resultCard">
-                <div class="result-label">Peso Estimado</div>
-                <div class="result-value" id="resultValue">0</div>
-                <div class="result-unit" id="resultUnit">gramos</div>
-                <div class="result-detail" id="resultDetail">0 unidades × 0g c/u</div>
-            </div>
-        </div>
+<div id="tab-screws" class="section">
+<div class="stats">
+<div class="sbox2"><div class="n" id="ts">0</div><div class="l">Tornillos guardados</div></div>
+<div class="sbox2"><div class="n" id="tc">0</div><div class="l">Cálculos hoy</div></div>
+</div>
+<div class="card">
+<div style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">➕ Agregar Nuevo Tornillo</div>
+<div class="form-group"><label>Nombre / Medida</label><input type="text" id="nsn" placeholder="Ej: Tornillo M6 x 20 Zincado" autocomplete="off"></div>
+<div class="form-group"><label>Peso de 100 unidades (g)</label><input type="number" id="nsw" placeholder="Ej: 145.5" step=".01" min="0"></div>
+<button class="btn btn-p" onclick="add()">➕ Agregar a la lista</button>
+</div>
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<span style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px">📋 Mis Tornillos</span>
+<span class="bad bad-p" id="scb">0</span>
+</div>
+<div style="position:relative;margin-bottom:16px">
+<input type="text" id="ss" placeholder="Buscar tornillo..." oninput="rsl()" autocomplete="off" style="padding-left:44px">
+<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">🔍</span>
+</div>
+<div class="slist" id="sl"><div class="empty"><div class="icon">🔩</div><h3>No hay tornillos guardados</h3><p>Agregá tu primer tornillo para empezar</p></div></div>
+</div>
+</div>
 
-        <!-- TAB: TORNILLOS -->
-        <div id="tab-screws" class="section">
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="number" id="totalScrews">0</div>
-                    <div class="label">Tornillos guardados</div>
-                </div>
-                <div class="stat-box">
-                    <div class="number" id="totalCalcs">0</div>
-                    <div class="label">Cálculos hoy</div>
-                </div>
-            </div>
-            <div class="card">
-                <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">➕ Agregar Nuevo Tornillo</div>
-                <div class="form-group">
-                    <label>Nombre / Medida</label>
-                    <input type="text" id="newScrewName" placeholder="Ej: Tornillo M6 x 20 Zincado" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label>Peso de 100 unidades (g)</label>
-                    <input type="number" id="newScrewWeight" placeholder="Ej: 145.5" step="0.01" min="0">
-                </div>
-                <button class="btn btn-primary" onclick="addScrew()">➕ Agregar a la lista</button>
-            </div>
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">📋 Mis Tornillos</span>
-                    <span class="badge badge-primary" id="screwCountBadge">0</span>
-                </div>
-                <div style="position: relative; margin-bottom: 16px;">
-                    <input type="text" id="searchScrews" placeholder="Buscar tornillo..." oninput="renderScrewList()" autocomplete="off" style="padding-left: 44px;">
-                    <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
-                </div>
-                <div class="screw-list" id="screwList">
-                    <div class="empty-state">
-                        <div class="icon">🔩</div>
-                        <h3>No hay tornillos guardados</h3>
-                        <p>Agregá tu primer tornillo para empezar</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div id="tab-sync" class="section">
+<div class="sync" id="sp">
+<h3>🌐 Sincronización</h3>
+<p style="font-size:.85rem;opacity:.8;margin-bottom:12px">Compartí tus tornillos entre dispositivos. Sin cuenta, sin registro.</p>
+<div id="shc" style="display:none">
+<div style="font-size:.8rem;opacity:.7;margin-bottom:4px">Tu código de sincronización:</div>
+<div class="scode" id="scd">---</div>
+<div class="sact2">
+<button class="btn btn-s" onclick="csc()">📋 Copiar</button>
+<button class="btn btn-w" onclick="swa()">📱 WhatsApp</button>
+</div>
+<button class="btn btn-d" style="margin-top:8px" onclick="ds()">🔌 Desconectar</button>
+</div>
+<div id="snc">
+<div class="inf"><strong>¿Cómo funciona?</strong><br>Se crea un código único que vincula todos tus dispositivos. No requiere cuenta.</div>
+<button class="btn btn-p" onclick="cns()">🆕 Crear Código</button>
+<div style="text-align:center;margin:16px 0;color:rgba(255,255,255,.5)">— o —</div>
+<div style="font-size:.8rem;opacity:.7;margin-bottom:4px">Ya tenés un código?</div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<input type="text" id="jc" placeholder="Ej: 550e8400-e29b-41d4" maxlength="50" autocomplete="off" style="flex:1;text-align:center;font-family:monospace;letter-spacing:1px;font-size:.9rem">
+<button class="btn btn-s" onclick="js()" style="width:auto;padding:14px 20px">🔗 Unirse</button>
+</div>
+</div>
+</div>
+<div class="card">
+<div style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">💾 Backup Manual</div>
+<div class="inf w">Exportá/importá los datos como archivo JSON.</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-n" onclick="ed()">📤 Exportar</button>
+<label class="btn btn-i" style="cursor:pointer;display:flex;align-items:center;justify-content:center">📥 Importar<input type="file" id="if" accept=".json" style="display:none" onchange="idt(this)"></label>
+</div>
+</div>
+</div>
 
-        <!-- TAB: SYNC -->
-        <div id="tab-sync" class="section">
-            <div class="sync-panel" id="syncPanel">
-                <h3>🌐 Sincronización</h3>
-                <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 12px;">Compartí tus tornillos entre todos tus dispositivos usando un código.</p>
-                <div id="syncHasCode" style="display: none;">
-                    <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px;">Tu código de sincronización:</div>
-                    <div class="sync-code" id="syncCodeDisplay">---</div>
-                    <div class="sync-actions">
-                        <button class="btn btn-success" onclick="copySyncCode()">📋 Copiar</button>
-                        <button class="btn btn-warning" onclick="shareViaWhatsApp()">📱 WhatsApp</button>
-                    </div>
-                    <button class="btn btn-danger" style="margin-top: 8px;" onclick="disconnectSync()">🔌 Desconectar</button>
-                </div>
-                <div id="syncNoCode">
-                    <div class="info-box"><strong>¿Cómo funciona?</strong><br>Se crea un código único que vincula todos tus dispositivos.</div>
-                    <button class="btn btn-primary" onclick="createNewSync()">🆕 Crear Código</button>
-                    <div style="text-align: center; margin: 16px 0; color: rgba(255,255,255,0.5);">— o —</div>
-                    <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px;">Ya tenés un código?</div>
-                    <div style="display: flex; gap: 8px; margin-top: 12px;">
-                        <input type="text" id="joinCode" placeholder="ABC123XYZ" maxlength="20" autocomplete="off" style="flex: 1; text-align: center; font-family: monospace; letter-spacing: 2px; font-size: 1.1rem;">
-                        <button class="btn btn-success" onclick="joinSync()" style="width: auto; padding: 14px 20px;">🔗 Unirse</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">💾 Backup Manual</div>
-                <div class="info-box warning">Exportá/importá los datos como archivo JSON.</div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="exportData()">📤 Exportar</button>
-                    <label class="btn btn-info" style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                        📥 Importar
-                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(this)">
-                    </label>
-                </div>
-            </div>
-        </div>
+<div id="tab-history" class="section">
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<span style="color:var(--p);font-weight:700;text-transform:uppercase;letter-spacing:1px">📜 Últimos Cálculos</span>
+<button class="bicon x" onclick="ch()" title="Borrar">🗑️</button>
+</div>
+<div class="hlist" id="hl"><div class="empty"><div class="icon">📋</div><h3>Sin historial</h3><p>Los cálculos aparecerán aquí</p></div></div>
+</div>
+</div>
+</div>
 
-        <!-- TAB: HISTORIAL -->
-        <div id="tab-history" class="section">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">📜 Últimos Cálculos</span>
-                    <button class="btn-icon delete" onclick="clearHistory()" title="Borrar">🗑️</button>
-                </div>
-                <div class="history-list" id="historyList">
-                    <div class="empty-state">
-                        <div class="icon">📋</div>
-                        <h3>Sin historial</h3>
-                        <p>Los cálculos aparecerán aquí</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="modal" id="em"><div class="mdl"><h2>✏️ Editar Tornillo</h2><div class="form-group"><label>Nombre</label><input type="text" id="en"></div><div class="form-group"><label>Peso 100u (g)</label><input type="number" id="ew" step=".01" min="0"></div><div class="mact"><button class="btn btn-n" onclick="cm()">Cancelar</button><button class="btn btn-p" onclick="se()">Guardar</button></div></div></div>
 
-    <div class="modal-overlay" id="editModal">
-        <div class="modal">
-            <h2>✏️ Editar Tornillo</h2>
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="editName">
-            </div>
-            <div class="form-group">
-                <label>Peso 100u (g)</label>
-                <input type="number" id="editWeight" step="0.01" min="0">
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveEdit()">Guardar</button>
-            </div>
-        </div>
-    </div>
+<div class="toast" id="toast"></div>
+<div class="ft">RIOS v2.0 • Sync via JSONStorage.net</div>
 
-    <div class="toast" id="toast"></div>
-    <div class="footer">RIOS v2.0 • Sync via GitHub Gist</div>
 <script>
-// ========================
-// CONFIG
-// ========================
-const GIST_API = 'https://api.github.com/gists';
-const STORAGE_KEY = 'calcpesa_screws';
-const HISTORY_KEY = 'calcpesa_history';
-const SYNC_KEY = 'calcpesa_sync';
+const JS_API='https://api.jsonstorage.net/v1/json',SK='calcpesa_screws',HK='calcpesa_history',YK='calcpesa_sync';
+let sc=[],hs=[],ei=-1,sy=null,si=null,ss=null,cs=[],ci=-1;
 
-let screws = [];
-let history = [];
-let editingIndex = -1;
-let syncConfig = null;
-let syncInterval = null;
-let selectedCalcScrew = null;
-let calcSuggestions = [];
-let calcSelectedIndex = -1;
+function ld(){try{let s=localStorage.getItem(SK),h=localStorage.getItem(HK),y=localStorage.getItem(YK);if(s)sc=JSON.parse(s);if(h)hs=JSON.parse(h);if(y){sy=JSON.parse(y);us();sa()}}catch(e){console.error(e)}}
+function sl(){localStorage.setItem(SK,JSON.stringify(sc));localStorage.setItem(HK,JSON.stringify(hs))}
+function ssy(){if(sy)localStorage.setItem(YK,JSON.stringify(sy));else localStorage.removeItem(YK)}
 
-// ========================
-// STORAGE
-// ========================
-function loadData() {
-    try {
-        const s = localStorage.getItem(STORAGE_KEY);
-        if (s) screws = JSON.parse(s);
-        const h = localStorage.getItem(HISTORY_KEY);
-        if (h) history = JSON.parse(h);
-        const sync = localStorage.getItem(SYNC_KEY);
-        if (sync) {
-            syncConfig = JSON.parse(sync);
-            updateSyncUI();
-            startAutoSync();
-        }
-    } catch(e) { console.error(e); }
-}
+function st(t){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));let i=['calc','screws','sync','history'].indexOf(t);if(i>=0)document.querySelectorAll('.tab')[i].classList.add('active');document.getElementById('tab-'+t).classList.add('active');if(t=='screws'){rsl();us2()}if(t=='history')rh();if(t=='calc')setTimeout(()=>document.getElementById('csi').focus(),100);if(t=='sync')us()}
 
-function saveLocal() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(screws));
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-}
+function csi(){let i=document.getElementById('csi'),q=i.value.trim();document.getElementById('cc').style.display=q?'block':'none';if(!q){hcs();return}let l=q.toLowerCase();cs=sc.map((s,x)=>({screw:s,index:x})).filter(x=>x.screw.name.toLowerCase().includes(l)).sort((a,b)=>{let na=a.screw.name.toLowerCase(),nb=b.screw.name.toLowerCase();if(na.startsWith(l)&&!nb.startsWith(l))return-1;if(nb.startsWith(l)&&!na.startsWith(l))return 1;return na.length-nb.length}).slice(0,6);ci=-1;rcs(l)}
+function rcs(q){let d=document.getElementById('csd');if(!cs.length){let c=document.getElementById('csi').value;d.innerHTML='<div class="ns"><div style="margin-bottom:8px">🔩 No encontrado</div><div style="font-size:.8rem">Escribí el nombre completo para agregarlo</div></div><div class="nb" onclick="snf()">➕ Agregar "'+eh(c)+'"</div>';d.style.display='block';return}d.innerHTML=cs.map((x,i)=>'<div class="si" data-index="'+i+'" onclick="scs('+i+')" onmouseenter="hs('+i+')"><div><div class="st">'+ht(x.screw.name,q)+'</div></div><div class="sm">'+x.screw.weight100+'g/100u</div></div>').join('');d.style.display='block'}
+function scs(i){if(i<0||i>=cs.length)return;ss=cs[i];let s=ss.screw;document.getElementById('csi').value=s.name;hcs();document.getElementById('ssn').textContent=s.name;document.getElementById('ssw').textContent=s.weight100+'g cada 100 unidades';document.getElementById('ssi').style.display='flex';document.getElementById('nsf').style.display='none';a2();toast('✅ '+s.name+' seleccionado')}
+function hs(i){ci=i;ucs()}
+function csk(e){if(!cs.length&&e.key=='Enter'){snf();return}switch(e.key){case'ArrowDown':e.preventDefault();ci=Math.min(ci+1,cs.length-1);ucs();scs2();break;case'ArrowUp':e.preventDefault();ci=Math.max(ci-1,-1);ucs();scs2();break;case'Enter':e.preventDefault();if(ci>=0)scs(ci);else if(cs.length)scs(0);break;case'Escape':hcs();break}}
+function ucs(){document.querySelectorAll('#csd .si').forEach((x,i)=>x.classList.toggle('sel',i===ci))}
+function scs2(){let s=document.querySelector('#csd .si.sel');if(s)s.scrollIntoView({block:'nearest',behavior:'smooth'})}
+function hcs(){document.getElementById('csd').style.display='none';ci=-1}
+function csf(){let q=document.getElementById('csi').value.trim();if(q.length>0&&!ss)csi()}
+function csb(){setTimeout(()=>hcs(),200)}
+function ccs(){document.getElementById('csi').value='';document.getElementById('cc').style.display='none';hcs();css()}
+function css(){ss=null;document.getElementById('ssi').style.display='none';document.getElementById('nsf').style.display='none';document.getElementById('csi').value='';document.getElementById('cc').style.display='none';d2()}
+function snf(){let q=document.getElementById('csi').value.trim();document.getElementById('ncn').value=q;document.getElementById('nsf').style.display='block';document.getElementById('ssi').style.display='none';hcs();setTimeout(()=>document.getElementById('ncw').focus(),100)}
 
-function saveSyncConfig() {
-    if (syncConfig) localStorage.setItem(SYNC_KEY, JSON.stringify(syncConfig));
-    else localStorage.removeItem(SYNC_KEY);
-}
+async function sns(){let n=document.getElementById('ncn').value.trim(),w=parseFloat(document.getElementById('ncw').value);if(!n||!w||w<=0){toast('Completá nombre y peso','e');return}let e=sc.findIndex(x=>x.name.toLowerCase()===n.toLowerCase());if(e>=0){toast('Ese tornillo ya existe','w');ss={screw:sc[e],index:e}}else{let ns={name:n,weight100:w,created:new Date().toISOString(),updated:new Date().toISOString()};sc.push(ns);sl();ss={screw:ns,index:sc.length-1};if(sy)await pc();toast('Tornillo guardado ✅')}document.getElementById('ssn').textContent=ss.screw.name;document.getElementById('ssw').textContent=ss.screw.weight100+'g cada 100 unidades';document.getElementById('ssi').style.display='flex';document.getElementById('nsf').style.display='none';document.getElementById('csi').value=ss.screw.name;a2();us2()}
 
-// ========================
-// TABS
-// ========================
-function showTab(tabName) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    const tabs = ['calc', 'screws', 'sync', 'history'];
-    const idx = tabs.indexOf(tabName);
-    if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
-    document.getElementById('tab-' + tabName).classList.add('active');
+function a2(){document.getElementById('step2').classList.add('on');document.getElementById('qty').disabled=false;document.querySelectorAll('.qb').forEach(b=>{b.disabled=false;b.style.opacity='1'})}
+function d2(){document.getElementById('step2').classList.remove('on');document.getElementById('qty').value='';document.getElementById('qty').disabled=true;document.querySelectorAll('.qb').forEach(b=>{b.disabled=true;b.style.opacity='.3'});document.getElementById('res').classList.remove('on')}
+function sq(q){document.getElementById('qty').value=q;calc()}
+function calc(){if(!ss)return;let w=ss.screw.weight100,q=parseInt(document.getElementById('qty').value),r=document.getElementById('res');if(!w||!q||w<=0||q<=0){r.classList.remove('on');return}let uw=w/100,tw=uw*q,dv,du;if(tw>=1000){dv=(tw/1000).toFixed(3);du='kilogramos'}else{dv=tw.toFixed(2);du='gramos'}document.getElementById('rv').textContent=dv;document.getElementById('ru').textContent=du;document.getElementById('rd').textContent=q+' unidades × '+uw.toFixed(3)+'g c/u = '+tw.toFixed(2)+'g total';r.classList.add('on');ah(ss.screw.name,q,tw)}
+function ah(n,q,w){if(!n)return;hs.unshift({name:n,qty:q,weight:w,time:new Date().toISOString()});if(hs.length>50)hs=hs.slice(0,50);sl()}
 
-    if (tabName === 'screws') { renderScrewList(); updateStats(); }
-    if (tabName === 'history') renderHistory();
-    if (tabName === 'calc') setTimeout(() => document.getElementById('calcSearchInput').focus(), 100);
-    if (tabName === 'sync') updateSyncUI();
-}
+function rsl(){let l=document.getElementById('sl'),s=document.getElementById('ss').value.toLowerCase().trim(),f=s?sc.filter(x=>x.name.toLowerCase().includes(s)):sc;document.getElementById('scb').textContent=sc.length;document.getElementById('ts').textContent=sc.length;if(!f.length){l.innerHTML='<div class="empty"><div class="icon">🔩</div><h3>'+(sc.length===0?'No hay tornillos guardados':'No se encontraron resultados')+'</h3><p>'+(sc.length===0?'Agregá tu primer tornillo para empezar':'Probá con otra búsqueda')+'</p></div>';return}l.innerHTML=f.map((x,i)=>{let o=sc.indexOf(x);return'<div class="sitem"><div class="sinfo"><h3>'+eh(x.name)+'</h3><p>'+x.weight100+'g cada 100u • '+(x.weight100/100).toFixed(3)+'g c/u</p></div><div class="sact"><button class="bicon u" onclick="us3('+o+')" title="Usar">⚖️</button><button class="bicon e" onclick="oe('+o+')" title="Editar">✏️</button><button class="bicon x" onclick="ds2('+o+')" title="Eliminar">🗑️</button></div></div>'}).join('')}
+
+function us3(i){let s=sc[i];ss={screw:s,index:i};st('calc');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab')[0].classList.add('active');document.getElementById('csi').value=s.name;document.getElementById('ssn').textContent=s.name;document.getElementById('ssw').textContent=s.weight100+'g cada 100 unidades';document.getElementById('ssi').style.display='flex';document.getElementById('nsf').style.display='none';document.getElementById('cc').style.display='block';a2();toast('✅ '+s.name+' listo')}
+
+async function add(){let n=document.getElementById('nsn').value.trim(),w=parseFloat(document.getElementById('nsw').value);if(!n||!w||w<=0){toast('Completá todos los campos','e');return}sc.push({name:n,weight100:w,created:new Date().toISOString(),updated:new Date().toISOString()});sl();document.getElementById('nsn').value='';document.getElementById('nsw').value='';rsl();us2();toast('Tornillo agregado ✅');if(sy)await pc()}
+function oe(i){ei=i;let s=sc[i];document.getElementById('en').value=s.name;document.getElementById('ew').value=s.weight100;document.getElementById('em').classList.add('on')}
+function cm(){document.getElementById('em').classList.remove('on');ei=-1}
+async function se(){if(ei<0)return;let n=document.getElementById('en').value.trim(),w=parseFloat(document.getElementById('ew').value);if(!n||!w||w<=0){toast('Datos inválidos','e');return}sc[ei].name=n;sc[ei].weight100=w;sc[ei].updated=new Date().toISOString();sl();rsl();cm();toast('Tornillo actualizado ✅');if(sy)await pc()}
+async function ds2(i){if(!confirm('¿Eliminar "'+sc[i].name+'"?'))return;sc.splice(i,1);sl();rsl();us2();toast('Tornillo eliminado');if(sy)await pc()}
+
+function rh(){let l=document.getElementById('hl');if(!hs.length){l.innerHTML='<div class="empty"><div class="icon">📋</div><h3>Sin historial</h3><p>Los cálculos aparecerán aquí</p></div>';return}let t=new Date().toDateString();document.getElementById('tc').textContent=hs.filter(h=>new Date(h.time).toDateString()===t).length;l.innerHTML=hs.map(h=>{let d=new Date(h.time),ts=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),ds=d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}),ws=h.weight>=1000?(h.weight/1000).toFixed(3)+' kg':h.weight.toFixed(2)+' g';return'<div class="hitem"><div><div style="font-weight:600">'+eh(h.name)+'</div><div style="color:var(--tl);font-size:.8rem">'+h.qty+' unidades → '+ws+'</div></div><div class="time">'+ds+'<br>'+ts+'</div></div>'}).join('')}
+function ch(){if(!confirm('¿Borrar todo el historial?'))return;hs=[];sl();rh();toast('Historial borrado')}
+function us2(){document.getElementById('ts').textContent=sc.length;let t=new Date().toDateString();document.getElementById('tc').textContent=hs.filter(h=>new Date(h.time).toDateString()===t).length}
 
 // ========================
-// CALCULADORA - BÚSQUEDA PREDICTIVA
+// SYNC - JSONStorage.net
 // ========================
-function onCalcSearchInput() {
-    const input = document.getElementById('calcSearchInput');
-    const query = input.value.trim();
-    document.getElementById('calcClearSearch').style.display = query ? 'block' : 'none';
+async function cns(){toast('Creando sincronización...','i');try{let data={screws:sc,history:hs,createdAt:new Date().toISOString(),version:3,app:'RIOS'};let r=await fetch(JS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw new Error('HTTP '+r.status);let result=await r.json();if(!result.uri)throw new Error('No URI');let code=result.uri.replace('https://api.jsonstorage.net/v1/json/','');sy={code:code,uri:result.uri,createdAt:new Date().toISOString()};ssy();us();sa();toast('¡Sincronización creada!','s')}catch(e){console.error('Sync error:',e);toast('Error: '+e.message,'e')}}
 
-    if (query.length === 0) { hideCalcSuggestions(); return; }
+async function js(){let c=document.getElementById('jc').value.trim();if(!c||c.length<3){toast('Ingresá un código válido','e');return}toast('Buscando...','i');try{let uri=JS_API+'/'+c,r=await fetch(uri);if(!r.ok){toast('Código no encontrado','e');return}let rd=await r.json();if(!rd.screws||!Array.isArray(rd.screws)){toast('Datos inválidos','e');return}if(sc.length>0&&rd.screws.length>0){if(confirm('¿Reemplazar tus '+sc.length+' tornillos por los '+rd.screws.length+' remotos?'))sc=rd.screws;else rd.screws.forEach(rs=>{if(!sc.some(ls=>ls.name.toLowerCase()===rs.name.toLowerCase()))sc.push(rs)})}else sc=rd.screws;if(rd.history)hs=rd.history;sy={code:c,uri:uri,joinedAt:new Date().toISOString()};sl();ssy();us();rsl();sa();toast('¡Conectado! '+sc.length+' tornillos','s')}catch(e){console.error('Join error:',e);toast('Error: '+e.message,'e')}}
 
-    const q = query.toLowerCase();
-    calcSuggestions = screws.map((s, i) => ({ screw: s, index: i }))
-        .filter(item => item.screw.name.toLowerCase().includes(q))
-        .sort((a, b) => {
-            const na = a.screw.name.toLowerCase(), nb = b.screw.name.toLowerCase();
-            if (na.startsWith(q) && !nb.startsWith(q)) return -1;
-            if (nb.startsWith(q) && !na.startsWith(q)) return 1;
-            return na.length - nb.length;
-        })
-        .slice(0, 6);
+async function pc(){if(!sy||!sy.uri)return;try{let data={screws:sc,history:hs,updatedAt:new Date().toISOString(),version:3,app:'RIOS'};let r=await fetch(sy.uri,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(r.ok)console.log('Sync OK');else console.log('Sync failed')}catch(e){console.error('Push error:',e)}}
 
-    calcSelectedIndex = -1;
-    renderCalcSuggestions(q);
-}
+async function pfc(){if(!sy||!sy.uri)return;try{let r=await fetch(sy.uri);if(!r.ok)return;let rd=await r.json();if(rd.screws){rd.screws.forEach(rs=>{let ex=sc.find(ls=>ls.name.toLowerCase()===rs.name.toLowerCase());if(!ex)sc.push(rs);else if(rs.updated&&ex.updated&&new Date(rs.updated)>new Date(ex.updated)){ex.weight100=rs.weight100;ex.updated=rs.updated}});sl();rsl()}}catch(e){console.error('Pull error:',e)}}
 
-function renderCalcSuggestions(query) {
-    const dd = document.getElementById('calcSuggestions');
-    if (calcSuggestions.length === 0) {
-        const cur = document.getElementById('calcSearchInput').value;
-        dd.innerHTML = '<div class="no-suggestions"><div style="margin-bottom:8px">🔩 No encontrado</div><div style="font-size:0.8rem">Escribí el nombre completo para agregarlo</div></div><div class="no-suggestions-btn" onclick="showNewScrewForm()">➕ Agregar "' + escapeHtml(cur) + '"</div>';
-        dd.style.display = 'block';
-        return;
-    }
-    dd.innerHTML = calcSuggestions.map((item, i) => {
-        return '<div class="suggestion-item" data-index="' + i + '" onclick="selectCalcSuggestion(' + i + ')" onmouseenter="hoverCalcSuggestion(' + i + ')"><div><div class="suggestion-text">' + highlightText(item.screw.name, query) + '</div></div><div class="suggestion-meta">' + item.screw.weight100 + 'g/100u</div></div>';
-    }).join('');
-    dd.style.display = 'block';
-}
+function sa(){if(si)clearInterval(si);si=setInterval(async()=>{if(sy&&navigator.onLine)await pfc()},30000);window.addEventListener('online',()=>{if(sy){pfc();toast('Online','s')}});window.addEventListener('offline',()=>toast('Offline','w'))}
+function ds(){if(!confirm('¿Desconectar sincronización?'))return;if(si)clearInterval(si);sy=null;ssy();us();toast('Sincronización desconectada')}
+function us(){let h=document.getElementById('shc'),n=document.getElementById('snc');if(sy){h.style.display='block';n.style.display='none';document.getElementById('scd').textContent=sy.code}else{h.style.display='none';n.style.display='block'}}
+function csc(){if(!sy)return;navigator.clipboard.writeText(sy.code).then(()=>toast('Código copiado'))}
+function swa(){if(!sy)return;let t='Unite a mi RIOS con el código: *'+sy.code+'*\n\n'+window.location.href;window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')}
 
-function selectCalcSuggestion(index) {
-    if (index < 0 || index >= calcSuggestions.length) return;
-    selectedCalcScrew = calcSuggestions[index];
-    const s = selectedCalcScrew.screw;
-    document.getElementById('calcSearchInput').value = s.name;
-    hideCalcSuggestions();
-    document.getElementById('selectedScrewName').textContent = s.name;
-    document.getElementById('selectedScrewWeight').textContent = s.weight100 + 'g cada 100 unidades';
-    document.getElementById('selectedScrewInfo').style.display = 'flex';
-    document.getElementById('newScrewForm').style.display = 'none';
-    activateStep2();
-    showToast('✅ ' + s.name + ' seleccionado');
-}
+function ed(){let d={screws:sc,history:hs,exportedAt:new Date().toISOString(),version:2};let b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='rios-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);toast('Backup descargado ✅')}
+function idt(inp){let f=inp.files[0];if(!f)return;let r=new FileReader();r.onload=function(e){try{let d=JSON.parse(e.target.result);if(d.screws){if(sc.length>0){if(confirm('¿Reemplazar tus '+sc.length+' tornillos por los '+d.screws.length+' del archivo?'))sc=d.screws;else d.screws.forEach(ds=>{if(!sc.some(s=>s.name.toLowerCase()===ds.name.toLowerCase()))sc.push(ds)})}else sc=d.screws}if(d.history)hs=d.history;sl();rsl();toast('Importados '+sc.length+' tornillos ✅');if(sy)pc()}catch(err){toast('Error al importar','e')}};r.readAsText(f);inp.value=''}
 
-function hoverCalcSuggestion(index) {
-    calcSelectedIndex = index;
-    updateCalcSuggestionSelection();
-}
+function toast(m,t){t=t||'s';let x=document.getElementById('toast');x.textContent=m;x.className='toast on '+t;setTimeout(()=>x.classList.remove('on'),2500)}
+function eh(t){let d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function ht(t,q){if(!q)return eh(t);let w=q.split(/\s+/).filter(x=>x.length>0);w.sort((a,b)=>b.length-a.length);let r=eh(t);w.forEach(x=>{let re=new RegExp('('+x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');r=r.replace(re,'<span class="sh">$1</span>')});return r}
 
-function onCalcSearchKeydown(e) {
-    if (calcSuggestions.length === 0 && e.key === 'Enter') { showNewScrewForm(); return; }
-    switch(e.key) {
-        case 'ArrowDown': e.preventDefault(); calcSelectedIndex = Math.min(calcSelectedIndex + 1, calcSuggestions.length - 1); updateCalcSuggestionSelection(); scrollToCalcSuggestion(); break;
-        case 'ArrowUp': e.preventDefault(); calcSelectedIndex = Math.max(calcSelectedIndex - 1, -1); updateCalcSuggestionSelection(); scrollToCalcSuggestion(); break;
-        case 'Enter': e.preventDefault(); if (calcSelectedIndex >= 0) selectCalcSuggestion(calcSelectedIndex); else if (calcSuggestions.length > 0) selectCalcSuggestion(0); break;
-        case 'Escape': hideCalcSuggestions(); break;
-    }
-}
-
-function updateCalcSuggestionSelection() {
-    document.querySelectorAll('#calcSuggestions .suggestion-item').forEach((item, i) => {
-        item.classList.toggle('selected', i === calcSelectedIndex);
-    });
-}
-
-function scrollToCalcSuggestion() {
-    const selected = document.querySelector('#calcSuggestions .suggestion-item.selected');
-    if (selected) selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-}
-
-function hideCalcSuggestions() {
-    document.getElementById('calcSuggestions').style.display = 'none';
-    calcSelectedIndex = -1;
-}
-
-function onCalcSearchFocus() {
-    const q = document.getElementById('calcSearchInput').value.trim();
-    if (q.length > 0 && !selectedCalcScrew) onCalcSearchInput();
-}
-
-function onCalcSearchBlur() {
-    setTimeout(() => hideCalcSuggestions(), 200);
-}
-
-function clearCalcSearch() {
-    document.getElementById('calcSearchInput').value = '';
-    document.getElementById('calcClearSearch').style.display = 'none';
-    hideCalcSuggestions();
-    clearSelectedScrew();
-}
-
-function clearSelectedScrew() {
-    selectedCalcScrew = null;
-    document.getElementById('selectedScrewInfo').style.display = 'none';
-    document.getElementById('newScrewForm').style.display = 'none';
-    document.getElementById('calcSearchInput').value = '';
-    document.getElementById('calcClearSearch').style.display = 'none';
-    deactivateStep2();
-}
-
-function showNewScrewForm() {
-    const q = document.getElementById('calcSearchInput').value.trim();
-    document.getElementById('newCalcScrewName').value = q;
-    document.getElementById('newScrewForm').style.display = 'block';
-    document.getElementById('selectedScrewInfo').style.display = 'none';
-    hideCalcSuggestions();
-    setTimeout(() => document.getElementById('newCalcWeight100').focus(), 100);
-}
-
-async function saveNewScrewFromCalc() {
-    const name = document.getElementById('newCalcScrewName').value.trim();
-    const weight = parseFloat(document.getElementById('newCalcWeight100').value);
-    if (!name || !weight || weight <= 0) { showToast('Completá nombre y peso', 'error'); return; }
-
-    const existing = screws.findIndex(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing >= 0) {
-        showToast('Ese tornillo ya existe', 'warning');
-        selectedCalcScrew = { screw: screws[existing], index: existing };
-    } else {
-        const newScrew = { name: name, weight100: weight, created: new Date().toISOString(), updated: new Date().toISOString() };
-        screws.push(newScrew);
-        saveLocal();
-        selectedCalcScrew = { screw: newScrew, index: screws.length - 1 };
-        if (syncConfig) await pushToCloud();
-        showToast('Tornillo guardado ✅');
-    }
-
-    document.getElementById('selectedScrewName').textContent = selectedCalcScrew.screw.name;
-    document.getElementById('selectedScrewWeight').textContent = selectedCalcScrew.screw.weight100 + 'g cada 100 unidades';
-    document.getElementById('selectedScrewInfo').style.display = 'flex';
-    document.getElementById('newScrewForm').style.display = 'none';
-    document.getElementById('calcSearchInput').value = selectedCalcScrew.screw.name;
-    activateStep2();
-    updateStats();
-}
-
-function activateStep2() {
-    document.getElementById('step2Card').classList.add('active');
-    document.getElementById('quantity').disabled = false;
-    document.querySelectorAll('.quick-btn').forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
-}
-
-function deactivateStep2() {
-    document.getElementById('step2Card').classList.remove('active');
-    document.getElementById('quantity').value = '';
-    document.getElementById('quantity').disabled = true;
-    document.querySelectorAll('.quick-btn').forEach(btn => { btn.disabled = true; btn.style.opacity = '0.3'; });
-    document.getElementById('resultCard').classList.remove('show');
-}
-
-function setQuantity(qty) {
-    document.getElementById('quantity').value = qty;
-    calculate();
-}
-
-function calculate() {
-    if (!selectedCalcScrew) return;
-    const w100 = selectedCalcScrew.screw.weight100;
-    const qty = parseInt(document.getElementById('quantity').value);
-    const rc = document.getElementById('resultCard');
-    if (!w100 || !qty || w100 <= 0 || qty <= 0) { rc.classList.remove('show'); return; }
-    const unitWeight = w100 / 100;
-    const totalWeight = unitWeight * qty;
-    let displayValue, displayUnit;
-    if (totalWeight >= 1000) { displayValue = (totalWeight / 1000).toFixed(3); displayUnit = 'kilogramos'; }
-    else { displayValue = totalWeight.toFixed(2); displayUnit = 'gramos'; }
-    document.getElementById('resultValue').textContent = displayValue;
-    document.getElementById('resultUnit').textContent = displayUnit;
-    document.getElementById('resultDetail').textContent = qty + ' unidades × ' + unitWeight.toFixed(3) + 'g c/u = ' + totalWeight.toFixed(2) + 'g total';
-    rc.classList.add('show');
-    addToHistory(selectedCalcScrew.screw.name, qty, totalWeight);
-}
-
-function addToHistory(name, qty, weight) {
-    if (!name) return;
-    history.unshift({ name: name, qty: qty, weight: weight, time: new Date().toISOString() });
-    if (history.length > 50) history = history.slice(0, 50);
-    saveLocal();
-}
-
-// ========================
-// SCREW LIST
-// ========================
-function renderScrewList() {
-    const list = document.getElementById('screwList');
-    const search = document.getElementById('searchScrews').value.toLowerCase().trim();
-    const filtered = search ? screws.filter(s => s.name.toLowerCase().includes(search)) : screws;
-    document.getElementById('screwCountBadge').textContent = screws.length;
-    document.getElementById('totalScrews').textContent = screws.length;
-
-    if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="icon">🔩</div><h3>' + (screws.length === 0 ? 'No hay tornillos guardados' : 'No se encontraron resultados') + '</h3><p>' + (screws.length === 0 ? 'Agregá tu primer tornillo para empezar' : 'Probá con otra búsqueda') + '</p></div>';
-        return;
-    }
-    list.innerHTML = filtered.map((s, i) => {
-        const originalIndex = screws.indexOf(s);
-        return '<div class="screw-item"><div class="screw-info"><h3>' + escapeHtml(s.name) + '</h3><p>' + s.weight100 + 'g cada 100u • ' + (s.weight100/100).toFixed(3) + 'g c/u</p></div><div class="screw-actions"><button class="btn-icon use" onclick="useScrew(' + originalIndex + ')" title="Usar">⚖️</button><button class="btn-icon edit" onclick="openEdit(' + originalIndex + ')" title="Editar">✏️</button><button class="btn-icon delete" onclick="deleteScrew(' + originalIndex + ')" title="Eliminar">🗑️</button></div></div>';
-    }).join('');
-}
-
-function useScrew(index) {
-    const s = screws[index];
-    selectedCalcScrew = { screw: s, index: index };
-    showTab('calc');
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab')[0].classList.add('active');
-    document.getElementById('calcSearchInput').value = s.name;
-    document.getElementById('selectedScrewName').textContent = s.name;
-    document.getElementById('selectedScrewWeight').textContent = s.weight100 + 'g cada 100 unidades';
-    document.getElementById('selectedScrewInfo').style.display = 'flex';
-    document.getElementById('newScrewForm').style.display = 'none';
-    document.getElementById('calcClearSearch').style.display = 'block';
-    activateStep2();
-    showToast('✅ ' + s.name + ' listo');
-}
-
-async function addScrew() {
-    const name = document.getElementById('newScrewName').value.trim();
-    const weight = parseFloat(document.getElementById('newScrewWeight').value);
-    if (!name || !weight || weight <= 0) { showToast('Completá todos los campos', 'error'); return; }
-    screws.push({ name: name, weight100: weight, created: new Date().toISOString(), updated: new Date().toISOString() });
-    saveLocal();
-    document.getElementById('newScrewName').value = '';
-    document.getElementById('newScrewWeight').value = '';
-    renderScrewList();
-    updateStats();
-    showToast('Tornillo agregado ✅');
-    if (syncConfig) await pushToCloud();
-}
-
-function openEdit(index) {
-    editingIndex = index;
-    const s = screws[index];
-    document.getElementById('editName').value = s.name;
-    document.getElementById('editWeight').value = s.weight100;
-    document.getElementById('editModal').classList.add('show');
-}
-
-function closeModal() {
-    document.getElementById('editModal').classList.remove('show');
-    editingIndex = -1;
-}
-
-async function saveEdit() {
-    if (editingIndex < 0) return;
-    const name = document.getElementById('editName').value.trim();
-    const weight = parseFloat(document.getElementById('editWeight').value);
-    if (!name || !weight || weight <= 0) { showToast('Datos inválidos', 'error'); return; }
-    screws[editingIndex].name = name;
-    screws[editingIndex].weight100 = weight;
-    screws[editingIndex].updated = new Date().toISOString();
-    saveLocal();
-    renderScrewList();
-    closeModal();
-    showToast('Tornillo actualizado ✅');
-    if (syncConfig) await pushToCloud();
-}
-
-async function deleteScrew(index) {
-    if (!confirm('¿Eliminar "' + screws[index].name + '"?')) return;
-    screws.splice(index, 1);
-    saveLocal();
-    renderScrewList();
-    updateStats();
-    showToast('Tornillo eliminado');
-    if (syncConfig) await pushToCloud();
-}
-
-// ========================
-// HISTORY
-// ========================
-function renderHistory() {
-    const list = document.getElementById('historyList');
-    if (history.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>Sin historial</h3><p>Los cálculos aparecerán aquí</p></div>';
-        return;
-    }
-    const today = new Date().toDateString();
-    document.getElementById('totalCalcs').textContent = history.filter(h => new Date(h.time).toDateString() === today).length;
-    list.innerHTML = history.map(h => {
-        const d = new Date(h.time);
-        const timeStr = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-        const dateStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
-        let wStr = h.weight >= 1000 ? (h.weight / 1000).toFixed(3) + ' kg' : h.weight.toFixed(2) + ' g';
-        return '<div class="history-item"><div><div style="font-weight:600">' + escapeHtml(h.name) + '</div><div style="color:var(--text-light);font-size:0.8rem">' + h.qty + ' unidades → ' + wStr + '</div></div><div class="time">' + dateStr + '<br>' + timeStr + '</div></div>';
-    }).join('');
-}
-
-function clearHistory() {
-    if (!confirm('¿Borrar todo el historial?')) return;
-    history = [];
-    saveLocal();
-    renderHistory();
-    showToast('Historial borrado');
-}
-
-// ========================
-// STATS
-// ========================
-function updateStats() {
-    document.getElementById('totalScrews').textContent = screws.length;
-    const today = new Date().toDateString();
-    document.getElementById('totalCalcs').textContent = history.filter(h => new Date(h.time).toDateString() === today).length;
-}
-
-// ========================
-// SYNC
-// ========================
-function generateSyncCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 10; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
-    return code;
-}
-
-async function createNewSync() {
-    const code = generateSyncCode();
-    showToast('Creando sincronización...', 'info');
-    try {
-        const response = await fetch(GIST_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-            body: JSON.stringify({
-                description: 'CalcPesa sync - ' + code,
-                public: true,
-                files: { 'calcpesa-data.json': { content: JSON.stringify({ code: code, screws: screws, lastUpdate: new Date().toISOString(), version: 2 }) } }
-            })
-        });
-        if (!response.ok) throw new Error('Error');
-        const data = await response.json();
-        syncConfig = { code: code, gistId: data.id, createdAt: new Date().toISOString() };
-        saveSyncConfig();
-        updateSyncUI();
-        startAutoSync();
-        showToast('¡Sincronización creada! Código: ' + code, 'success');
-    } catch (error) { showToast('Error al crear sincronización', 'error'); }
-}
-
-async function joinSync() {
-    const code = document.getElementById('joinCode').value.trim().toUpperCase();
-    if (!code || code.length < 6) { showToast('Ingresá un código válido', 'error'); return; }
-    showToast('Buscando sincronización...', 'info');
-    try {
-        const searchResponse = await fetch('https://api.github.com/gists?per_page=100');
-        if (!searchResponse.ok) throw new Error('Error');
-        const gists = await searchResponse.json();
-        const gist = gists.find(g => g.description && g.description.includes('CalcPesa sync - ' + code));
-        if (!gist) { showToast('Código no encontrado', 'error'); return; }
-        const dataResponse = await fetch(gist.url);
-        if (!dataResponse.ok) throw new Error('Error');
-        const gistData = await dataResponse.json();
-        const fileContent = gistData.files['calcpesa-data.json']?.content;
-        if (!fileContent) { showToast('No se encontraron datos', 'error'); return; }
-        const remoteData = JSON.parse(fileContent);
-        if (remoteData.screws) {
-            if (screws.length > 0 && remoteData.screws.length > 0) {
-                if (confirm('¿Reemplazar tus ' + screws.length + ' tornillos por los ' + remoteData.screws.length + ' remotos?')) screws = remoteData.screws;
-                else remoteData.screws.forEach(rs => { if (!screws.some(ls => ls.name.toLowerCase() === rs.name.toLowerCase())) screws.push(rs); });
-            } else if (remoteData.screws) screws = remoteData.screws;
-        }
-        syncConfig = { code: code, gistId: gist.id, joinedAt: new Date().toISOString() };
-        saveLocal();
-        saveSyncConfig();
-        updateSyncUI();
-        renderScrewList();
-        startAutoSync();
-        showToast('¡Conectado! ' + screws.length + ' tornillos sincronizados', 'success');
-    } catch (error) { showToast('Error al conectar', 'error'); }
-}
-
-async function pushToCloud() {
-    if (!syncConfig || !syncConfig.gistId) return;
-    try {
-        updateSyncStatus('syncing');
-        const response = await fetch(GIST_API + '/' + syncConfig.gistId, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-            body: JSON.stringify({ files: { 'calcpesa-data.json': { content: JSON.stringify({ code: syncConfig.code, screws: screws, lastUpdate: new Date().toISOString(), version: 2 }) } } })
-        });
-        if (response.ok) updateSyncStatus('online');
-        else updateSyncStatus('offline');
-    } catch (error) { updateSyncStatus('offline'); }
-}
-
-async function pullFromCloud() {
-    if (!syncConfig || !syncConfig.gistId) return;
-    try {
-        const response = await fetch(GIST_API + '/' + syncConfig.gistId);
-        if (!response.ok) return;
-        const gistData = await response.json();
-        const fileContent = gistData.files['calcpesa-data.json']?.content;
-        if (!fileContent) return;
-        const remoteData = JSON.parse(fileContent);
-        if (remoteData.screws) {
-            remoteData.screws.forEach(rs => {
-                const existing = screws.find(ls => ls.name.toLowerCase() === rs.name.toLowerCase());
-                if (!existing) screws.push(rs);
-                else if (rs.updated && existing.updated && new Date(rs.updated) > new Date(existing.updated)) { existing.weight100 = rs.weight100; existing.updated = rs.updated; }
-            });
-            saveLocal();
-            renderScrewList();
-            updateSyncStatus('online');
-        }
-    } catch (error) { updateSyncStatus('offline'); }
-}
-
-function startAutoSync() {
-    if (syncInterval) clearInterval(syncInterval);
-    syncInterval = setInterval(async () => { if (syncConfig && navigator.onLine) await pullFromCloud(); }, 30000);
-    window.addEventListener('online', () => { if (syncConfig) { pullFromCloud(); updateSyncStatus('online'); } });
-    window.addEventListener('offline', () => { updateSyncStatus('offline'); });
-}
-
-function disconnectSync() {
-    if (!confirm('¿Desconectar sincronización?')) return;
-    if (syncInterval) clearInterval(syncInterval);
-    syncConfig = null;
-    saveSyncConfig();
-    updateSyncUI();
-    updateSyncStatus('offline');
-    showToast('Sincronización desconectada');
-}
-
-function updateSyncUI() {
-    const hasCode = document.getElementById('syncHasCode');
-    const noCode = document.getElementById('syncNoCode');
-    if (syncConfig) {
-        hasCode.style.display = 'block';
-        noCode.style.display = 'none';
-        document.getElementById('syncCodeDisplay').textContent = syncConfig.code;
-    } else {
-        hasCode.style.display = 'none';
-        noCode.style.display = 'block';
-    }
-}
-
-function updateSyncStatus(status) {
-    const el = document.getElementById('syncStatus');
-    const icon = document.getElementById('syncIcon');
-    const text = document.getElementById('syncText');
-    el.className = 'sync-status ' + status;
-    switch(status) {
-        case 'online': icon.textContent = '🌐'; text.textContent = 'Sync ON'; break;
-        case 'offline': icon.textContent = '📴'; text.textContent = syncConfig ? 'Sin red' : 'Sin sync'; break;
-        case 'syncing': icon.innerHTML = '<span class="spinner"></span>'; text.textContent = 'Sync...'; break;
-    }
-}
-
-function copySyncCode() {
-    if (!syncConfig) return;
-    navigator.clipboard.writeText(syncConfig.code).then(() => showToast('Código copiado'));
-}
-
-function shareViaWhatsApp() {
-    if (!syncConfig) return;
-    const text = 'Unite a mi RIOS con el código: *' + syncConfig.code + '*\n\n' + window.location.href;
-    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-}
-
-function showSyncModal() { showTab('sync'); }
-
-// ========================
-// EXPORT / IMPORT
-// ========================
-function exportData() {
-    const data = { screws: screws, history: history, exportedAt: new Date().toISOString(), version: 2 };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'rios-backup-' + new Date().toISOString().slice(0,10) + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Backup descargado ✅');
-}
-
-function importData(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            if (data.screws) {
-                if (screws.length > 0) {
-                    if (confirm('¿Reemplazar tus ' + screws.length + ' tornillos por los ' + data.screws.length + ' del archivo?')) screws = data.screws;
-                    else data.screws.forEach(ds => { if (!screws.some(s => s.name.toLowerCase() === ds.name.toLowerCase())) screws.push(ds); });
-                } else screws = data.screws;
-            }
-            if (data.history) history = data.history;
-            saveLocal();
-            renderScrewList();
-            showToast('Importados ' + screws.length + ' tornillos ✅');
-            if (syncConfig) pushToCloud();
-        } catch (err) { showToast('Error al importar', 'error'); }
-    };
-    reader.readAsText(file);
-    input.value = '';
-}
-
-function shareApp() {
-    navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copiado'));
-}
-
-// ========================
-// UTILS
-// ========================
-function showToast(msg, type) {
-    type = type || 'success';
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.className = 'toast show ' + type;
-    setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function highlightText(text, query) {
-    if (!query) return escapeHtml(text);
-    const words = query.split(/\s+/).filter(w => w.length > 0);
-    words.sort((a, b) => b.length - a.length);
-    let result = escapeHtml(text);
-    words.forEach(word => {
-        const regex = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-        result = result.replace(regex, '<span class="suggestion-highlight">$1</span>');
-    });
-    return result;
-}
-
-// ========================
-// INIT
-// ========================
-loadData();
-updateStats();
-updateSyncUI();
-deactivateStep2();
-
-if (syncConfig) {
-    startAutoSync();
-    pullFromCloud();
-}
-
-if (navigator.onLine && syncConfig) updateSyncStatus('online');
-else if (!navigator.onLine && syncConfig) updateSyncStatus('offline');
-else updateSyncStatus('offline');
-
-setTimeout(() => {
-    document.getElementById('calcSearchInput').focus();
-}, 300);
-
-// Modal close on outside click
-document.getElementById('editModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
+ld();us2();us();d2();
+if(sy){sa();pfc()}
+setTimeout(()=>document.getElementById('csi').focus(),300);
+document.getElementById('em').addEventListener('click',function(e){if(e.target===this)cm()});
 </script>
 </body>
 </html>
